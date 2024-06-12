@@ -1,0 +1,47 @@
+﻿{
+  "commands": [
+    {
+      "label": "Command 1",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 1"
+    },
+    {
+      "label": "Command 3",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 4"
+    },
+    {
+      "label": "Command 4",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 3"
+    },
+    {
+      "label": "Command 5",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 1"
+    }
+  ],
+  "status": [
+    {
+      "label": "Status 1",
+      "defaultValue": "Initial Status 1"
+    },
+    {
+      "label": "Status 2",
+      "defaultValue": "Initial Status 2"
+    },
+    {
+      "label": "Status 3",
+      "defaultValue": "Initial Status 3"
+    },
+    {
+      "label": "Status 4",
+      "defaultValue": "Initial Status 4"
+    }
+  ]
+}
