@@ -1,16 +1,17 @@
-namespace CanBusApp;
-
-static class Program
+namespace CanBusApp
 {
-    /// <summary>
-    ///  The main entry point for the application.
-    /// </summary>
-    [STAThread]
-    static void Main()
+    static class Program
     {
-        // To customize application configuration such as set high DPI settings or default font,
-        // see https://aka.ms/applicationconfiguration.
-        ApplicationConfiguration.Initialize();
-        Application.Run(new Form1());
-    }    
+        [STAThread]
+        static void Main()
+        {
+            ApplicationConfiguration.Initialize();
+
+            var model = new CanBusModel();
+            var view = new Form1();
+            var controller = new CanBusController(model, view);
+
+            Application.Run(view);
+        }
+    }
 }

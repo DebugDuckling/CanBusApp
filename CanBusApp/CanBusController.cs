@@ -19,15 +19,13 @@ namespace CanBusApp
         private void ConnectButton_Click(object sender, EventArgs e)
         {
             model.NodeId = view.NodeId;
-            model.State = view.State;
-            model.SendCount = view.SendCount;
-            model.ReceiveCount = view.ReceiveCount;
-            model.Continuously = view.Continuously;
-            model.Auto = view.Auto;
+            model.Continuously = view.TxContinuous;
+            model.AutoUpdate = view.AutoUpdate;
             model.Commands = view.GetCommands();
             model.Statuses = view.GetStatuses();
 
             MessageBox.Show("Data collected and stored in buffer.");
         }
     }
+
 }

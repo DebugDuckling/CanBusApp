@@ -1,0 +1,1393 @@
+# ArcneDriver.cs
+﻿using System;
+using System.Runtime.InteropServices;
+
+namespace ArcnetDriver
+{
+    // Define the COM20020_CONFIG structure
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct COM20020_CONFIG
+    {
+        public ushort uiCom20020BaseIOAddress;
+        public byte byCom20020InterruptLevel;
+        public byte byCom20020Timeout;
+        public byte byCom20020NodeID;
+        public byte bCom20020_128NAKs;
+        public byte bCom20020ReceiveAll;
+        public byte byCom20020ClockPrescaler;
+        public byte bCom20020SlowArbitration;
+        public byte bCom20020ReceiveBroadcasts;
+    }
+
+    // Define the COM20020_TRANSMIT_BUFFER structure
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct COM20020_TRANSMIT_BUFFER
+    {
+        public byte byDestinationNodeID;
+        public ushort uiNumberOfBytes;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 508)]
+        public byte[] byDataBuffer;
+    }
+
+    // Define the COM20020_RECEIVE_BUFFER structure
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct COM20020_RECEIVE_BUFFER
+    {
+        public byte bySourceNodeID;
+        public byte byDestinationNodeID;
+        public ushort uiNumberOfBytes;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 508)]
+        public byte[] byDataBuffer;
+        public uint dwNumberOfFilledBuffers;
+    }
+
+    // Define the COM20020_STATUS structure
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct COM20020_STATUS
+    {
+        public byte bReceiveActivity;
+        public byte bPowerOnReset;
+        public byte bRecon;
+        public byte bToken;
+        public uint dwReceivedMessages;
+        public byte bTransmissionComplete;
+        public byte bTransmissionAcknowledged;
+        public byte bExcessiveNAKs;
+        public uint dwReserved;
+    }
+
+    // Define the COM20020_REGISTER structure
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct COM20020_REGISTER
+    {
+        public byte bWrite;
+        public byte byRegister;
+        public byte byValue;
+    }
+
+    public static class ArcX
+    {
+        private const string DLL_NAME = "ArcX.dll";
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020Init(ref COM20020_CONFIG cfg, byte deviceNumber, byte hardwareType);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020Register(ref COM20020_REGISTER reg);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020Status(ref COM20020_STATUS status);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020CancelTX();
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020FlushRX();
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020Transmit(ref COM20020_TRANSMIT_BUFFER txbuf);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020Receive(ref COM20020_RECEIVE_BUFFER rxbuf);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020WakeOnReceive(IntPtr receiveEvent);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020ResetWakeOnReceive();
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020WakeOnTXComplete(IntPtr transmitEvent);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020ResetWakeOnTXComplete();
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020WakeOnRecon(IntPtr reconEvent);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020ResetWakeOnRecon();
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020GetOverflowTotal(ref long packets, ref long data);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020GetFirmwareRevision(ref short rev);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020UsbVersion(ref short version);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Com20020Exit();
+    }
+}
+
+
+# ArcnetIf.cs
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Threading;
+
+namespace ArcnetDriver
+{
+    public enum WINMSG
+    {
+        WINMSG_RECON = 0x0400 + 1,
+        WINMSG_RX
+    };
+
+    public enum TxState_E
+    {
+        TxState_ERR = 0,   // Transmission error
+        TxState_TMA = 1,   // The message was properly received.
+        TxState_NAK = 2,   // Message was killed because of excessive NAKs.
+        TxState_NA = 3,    // ?
+        TxState_TA = 4     // The message was sent, but not acknowledged.
+    };
+
+    public class ArcnetIf
+    {
+        // General
+        private const int LAN_EVENT_TIMEOUT = 100; // Time to wait for events (ms).
+
+        // LAN definitions
+        private const int LAN_SPEED = 4;           // Example speed value
+        private const int LAN_TIMEOUT = 24;        // Example timeout value
+        private const int LAN_DEVICE = 0;          // Device 1
+        private const int LAN_HWTYPE = 0;          // USB22
+        private const byte LAN_128NAKS = 1;
+        private const byte LAN_RXALL = 0;
+
+        // Static variables
+        private static bool bRunning = false;              // Indicates if threads are running.
+        private static uint dwRecon = 0;                   // Number of recons.
+        private static EventWaitHandle hTxEvent = new AutoResetEvent(false); // TX event handle.
+        private static EventWaitHandle hRxEvent = new AutoResetEvent(false); // RX event handle.
+        private static EventWaitHandle hReconEvent = new AutoResetEvent(false); // Recon event handle.
+        private static SemaphoreSlim RxListSema = new SemaphoreSlim(1, 1); // Semaphore to protect the RxList.
+        private static Queue<COM20020_RECEIVE_BUFFER> RxMsgList = new Queue<COM20020_RECEIVE_BUFFER>(); // RX messages
+
+        // Static procedures
+        private static void ReconThread()
+        {
+            while (bRunning)
+            {
+                if (hReconEvent.WaitOne(LAN_EVENT_TIMEOUT))
+                {
+                    dwRecon++;
+                    // Signal event to the UI thread. (Implement this part according to your UI framework)
+                }
+            }
+        }
+
+        private static void ReceiveThread()
+        {
+            while (bRunning)
+            {
+                COM20020_RECEIVE_BUFFER crb = new COM20020_RECEIVE_BUFFER(); // Ensure crb is initialized
+                if (hRxEvent.WaitOne(LAN_EVENT_TIMEOUT))
+                {
+                    while (ArcX.Com20020Receive(ref crb) == 0)
+                    {
+                        RxListSema.Wait();
+                        RxMsgList.Enqueue(crb);
+                        RxListSema.Release();
+                    }
+                    // Signal event to the UI thread. (Implement this part according to your UI framework)
+                }
+            }
+        }
+
+        // Constructor
+        public ArcnetIf()
+        {
+      
+        }
+
+        // Destructor
+        ~ArcnetIf()
+        {
+            Close();
+        }
+
+        // Opens the ARCNET port.
+        public bool Open(byte nNodeId, byte bBroadcast)
+        {
+            bool bResult = false;
+            COM20020_CONFIG cfg = new COM20020_CONFIG
+            {
+                uiCom20020BaseIOAddress = 0,
+                byCom20020InterruptLevel = 0,
+                byCom20020Timeout = LAN_TIMEOUT,
+                byCom20020NodeID = nNodeId,
+                bCom20020_128NAKs = LAN_128NAKS,
+                bCom20020ReceiveAll = LAN_RXALL,
+                byCom20020ClockPrescaler = LAN_SPEED,
+                bCom20020SlowArbitration = 0,
+                bCom20020ReceiveBroadcasts = bBroadcast
+            };
+
+            if (ArcX.Com20020Init(ref cfg, LAN_DEVICE, LAN_HWTYPE) != 0)
+            {
+                Console.WriteLine("COM20020 was not properly initialized");
+            }
+            else
+            {
+                InitDeviceEvents();
+                bResult = true;
+            }
+
+            return bResult;
+        }
+
+        // Closes the ARCNET port.
+        public void Close()
+        {
+            bRunning = false;
+            ArcX.Com20020ResetWakeOnReceive();
+            ArcX.Com20020ResetWakeOnTXComplete();
+            ArcX.Com20020ResetWakeOnRecon();
+            ArcX.Com20020CancelTX();
+            ArcX.Com20020FlushRX();
+            ArcX.Com20020Exit();
+            dwRecon = 0;
+        }
+
+        // Reports the recon state.
+        public bool GetReconState()
+        {
+            COM20020_STATUS cs = new COM20020_STATUS();
+            ArcX.Com20020Status(ref cs);
+            return cs.bRecon > 0;
+        }
+
+        // Reports the recon counter.
+        public uint GetReconCount()
+        {
+            return dwRecon;
+        }
+
+        // Transmits a message.
+        public TxState_E TransmitMessage(byte nDestID, byte[] pBuffer, int nLength)
+        {
+            if (nLength > 508)
+                return TxState_E.TxState_ERR;
+
+            bool bTransmissionAcked = false;
+            COM20020_TRANSMIT_BUFFER ctb = new COM20020_TRANSMIT_BUFFER
+            {
+                byDestinationNodeID = nDestID,
+                uiNumberOfBytes = (ushort)nLength,
+                byDataBuffer = new byte[508]
+            };
+            Array.Copy(pBuffer, ctb.byDataBuffer, nLength);
+
+            while (!bTransmissionAcked)
+            {
+                bool bReturn = true;
+                while (bReturn)
+                {
+                    bReturn = ArcX.Com20020Transmit(ref ctb) == 0;
+                    hTxEvent.WaitOne(LAN_EVENT_TIMEOUT);
+                    COM20020_STATUS cs = new COM20020_STATUS();
+                    ArcX.Com20020Status(ref cs);
+                    if ((cs.bTransmissionComplete > 0) && (cs.bTransmissionAcknowledged > 0))
+                    {
+                        return TxState_E.TxState_TMA; // The message was properly received
+                    }
+                    if ((cs.bTransmissionComplete > 0) && !(cs.bTransmissionAcknowledged > 0))
+                    {
+                        return TxState_E.TxState_TA; // The message was sent, but not acknowledged.
+                    }
+                    if (cs.bExcessiveNAKs > 0) // Message was killed because of excessive NAKs
+                    {
+                        return TxState_E.TxState_NAK;
+                    }
+                    if (cs.bRecon > 0) // Recon active
+                    {
+                        return TxState_E.TxState_ERR;
+                    }
+                }
+            }
+            return TxState_E.TxState_NAK;
+        }
+
+        // Gets the next message in the RX list.
+        public bool GetRxMessage(out COM20020_RECEIVE_BUFFER pMsg)
+        {
+            pMsg = new COM20020_RECEIVE_BUFFER();
+            bool bResult = false;
+            RxListSema.Wait();
+            if (RxMsgList.Count > 0)
+            {
+                pMsg = RxMsgList.Dequeue();
+                bResult = true;
+            }
+            RxListSema.Release();
+            return bResult;
+        }
+
+        // Initializes the device events.
+        private void InitDeviceEvents()
+        {
+            hRxEvent = new AutoResetEvent(false);
+            ArcX.Com20020WakeOnReceive(hRxEvent.SafeWaitHandle.DangerousGetHandle());
+            hTxEvent = new AutoResetEvent(false);
+            ArcX.Com20020WakeOnTXComplete(hTxEvent.SafeWaitHandle.DangerousGetHandle());
+            bRunning = true;
+            Thread reconThread = new Thread(ReconThread);
+            reconThread.Start();
+            Thread receiveThread = new Thread(ReceiveThread);
+            receiveThread.Start();
+        }
+    }
+}
+
+
+# CanBusApp.csproj
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="commands_config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
+
+
+# CanBusController.cs
+﻿using System;
+using System.Windows.Forms;
+
+namespace CanBusApp
+{
+    public class CanBusController
+    {
+        private readonly CanBusModel model;
+        private readonly Form1 view;
+
+        public CanBusController(CanBusModel model, Form1 view)
+        {
+            this.model = model;
+            this.view = view;
+
+            view.ConnectButton.Click += ConnectButton_Click;
+        }
+
+        private void ConnectButton_Click(object sender, EventArgs e)
+        {
+            model.NodeId = view.NodeId;
+            model.State = view.State;
+            model.SendCount = view.SendCount;
+            model.ReceiveCount = view.ReceiveCount;
+            model.Continuously = view.Continuously;
+            model.Auto = view.Auto;
+            model.Commands = view.GetCommands();
+            model.Statuses = view.GetStatuses();
+
+            MessageBox.Show("Data collected and stored in buffer.");
+        }
+    }
+}
+
+
+# CanBusModel.cs
+﻿using System.Collections.Generic;
+
+public class CanBusModel
+{
+    public string NodeId { get; set; }
+    public string State { get; set; }
+    public int SendCount { get; set; }
+    public int ReceiveCount { get; set; }
+    public bool Continuously { get; set; }
+    public bool Auto { get; set; }
+    public List<Command> Commands { get; set; } = new List<Command>();
+    public bool Mode { get; set; }
+    public bool Enabler1 { get; set; }
+    public bool Enabler2 { get; set; }
+    public string Val1 { get; set; }
+    public string Val2 { get; set; }
+    public List<Status> Statuses { get; set; } = new List<Status>();
+}
+
+public class Command
+{
+    public string Label { get; set; }
+    public List<string> Options { get; set; }
+    public string DefaultValue { get; set; }
+}
+
+public class Status
+{
+    public string Label { get; set; }
+    public string DefaultValue { get; set; }
+}
+
+
+# commands_config.json
+﻿{
+  "commands": [
+    {
+      "label": "Command 1",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 1"
+    },
+    {
+      "label": "Command 3",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 4"
+    },
+    {
+      "label": "Command 4",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 3"
+    },
+    {
+      "label": "Command 5",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 1"
+    }
+  ],
+  "status": [
+    {
+      "label": "Status 1",
+      "defaultValue": "Initial Status 1"
+    },
+    {
+      "label": "Status 2",
+      "defaultValue": "Initial Status 2"
+    },
+    {
+      "label": "Status 3",
+      "defaultValue": "Initial Status 3"
+    },
+    {
+      "label": "Status 4",
+      "defaultValue": "Initial Status 4"
+    }
+  ]
+}
+
+
+# ConfigLoader.cs
+﻿using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
+
+public static class ConfigLoader
+{
+    public static CanBusModel LoadConfiguration(string path)
+    {
+        var json = File.ReadAllText(path);
+        var config = JsonConvert.DeserializeObject<ConfigModel>(json);
+        return new CanBusModel
+        {
+            Commands = config.Commands,
+            Statuses = config.Status
+        };
+    }
+}
+
+public class ConfigModel
+{
+    public List<Command> Commands { get; set; }
+    public List<Status> Status { get; set; }
+}
+
+
+# Form1.cs
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+using ArcnetDriver;
+
+namespace CanBusApp
+{
+    public partial class Form1 : Form
+    {
+        private CanBusModel model;
+        private Dictionary<string, ComboBox> commandComboBoxes = new Dictionary<string, ComboBox>();
+        private Dictionary<string, TextBox> statusTextBoxes = new Dictionary<string, TextBox>();
+        private ArcnetIf arcnetInterface;
+
+        public Form1()
+        {
+            InitializeComponent();
+            model = ConfigLoader.LoadConfiguration("commands_config.json");
+            InitializeDynamicComponents();
+            arcnetInterface = new ArcnetIf();
+        }
+
+        private void InitializeDynamicComponents()
+        {
+            int yPosition = 30;
+
+            // Commands section
+            foreach (var command in model.Commands)
+            {
+                var label = new Label
+                {
+                    Text = command.Label,
+                    Location = new Point(20, yPosition)
+                };
+                commandsGroup.Controls.Add(label);
+
+                var comboBox = new ComboBox
+                {
+                    DataSource = command.Options,
+                    Location = new Point(150, yPosition),
+                    Width = 100,
+                    DropDownStyle = ComboBoxStyle.DropDownList // Ensure dropdown style
+                };
+                commandsGroup.Controls.Add(comboBox);
+                commandComboBoxes[command.Label] = comboBox;
+
+                // Set default value if it exists
+                if (!string.IsNullOrEmpty(command.DefaultValue) && command.Options.Contains(command.DefaultValue))
+                {
+                    comboBox.SelectedItem = command.DefaultValue;
+                }
+
+                yPosition += 30;
+            }
+
+            // Status section
+            yPosition = 30;
+            foreach (var status in model.Statuses)
+            {
+                var label = new Label
+                {
+                    Text = status.Label,
+                    Location = new Point(20, yPosition)
+                };
+                statusGroup.Controls.Add(label);
+
+                var textBox = new TextBox
+                {
+                    Location = new Point(150, yPosition),
+                    Width = 100,
+                    Text = status.DefaultValue // Set default value
+                };
+                statusGroup.Controls.Add(textBox);
+                statusTextBoxes[status.Label] = textBox;
+
+                yPosition += 30;
+            }
+        }
+
+        private void connectButton_Click(object sender, EventArgs e)
+        {
+            byte nodeId = byte.Parse(txtNodeId.Text);
+            byte broadcast = 1; // Example value
+
+            bool success = arcnetInterface.Open(nodeId, broadcast);
+
+            if (success)
+            {
+                MessageBox.Show("Initialization successful.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("Initialization failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void closeButton_Click(object sender, EventArgs e)
+        {
+            arcnetInterface.Close();
+        }
+
+        public string NodeId => txtNodeId.Text;
+        public string State => txtState.Text;
+        public int SendCount => int.Parse(txtSendCount.Text);
+        public int ReceiveCount => int.Parse(txtReceiveCount.Text);
+        public bool Continuously => chkContinuously.Checked;
+        public bool Auto => chkAuto.Checked;
+
+        public List<Command> GetCommands()
+        {
+            var commands = new List<Command>();
+            foreach (var kvp in commandComboBoxes)
+            {
+                commands.Add(new Command { Label = kvp.Key, Options = new List<string> { kvp.Value.SelectedItem?.ToString() } });
+            }
+            return commands;
+        }
+
+        public List<Status> GetStatuses()
+        {
+            var statuses = new List<Status>();
+            foreach (var kvp in statusTextBoxes)
+            {
+                statuses.Add(new Status { Label = kvp.Key, DefaultValue = kvp.Value.Text });
+            }
+            return statuses;
+        }
+
+        public Button ConnectButton => this.connectButton;
+    }
+}
+
+
+# Form1.Designer.cs
+﻿namespace CanBusApp
+{
+    partial class Form1
+    {
+        private System.ComponentModel.IContainer components = null;
+        private Button connectButton;
+        private TextBox txtNodeId;
+        private TextBox txtState;
+        private TextBox txtSendCount;
+        private TextBox txtReceiveCount;
+        private CheckBox chkContinuously;
+        private CheckBox chkAuto;
+        private Label lblTitle;
+        private TableLayoutPanel mainLayout;
+        private GroupBox commandsGroup;
+        private GroupBox statusGroup;
+
+        private void InitializeComponent()
+        {
+            this.components = new System.ComponentModel.Container();
+            this.connectButton = new System.Windows.Forms.Button();
+            this.txtNodeId = new System.Windows.Forms.TextBox();
+            this.txtState = new System.Windows.Forms.TextBox();
+            this.txtSendCount = new System.Windows.Forms.TextBox();
+            this.txtReceiveCount = new System.Windows.Forms.TextBox();
+            this.chkContinuously = new System.Windows.Forms.CheckBox();
+            this.chkAuto = new System.Windows.Forms.CheckBox();
+            this.lblTitle = new System.Windows.Forms.Label();
+            this.mainLayout = new System.Windows.Forms.TableLayoutPanel();
+            this.commandsGroup = new System.Windows.Forms.GroupBox();
+            this.statusGroup = new System.Windows.Forms.GroupBox();
+
+            this.SuspendLayout();
+
+            // lblTitle
+            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
+            this.lblTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblTitle.Text = "CAN Bus Communication";
+            this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+
+            // mainLayout
+            this.mainLayout.ColumnCount = 5;
+            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
+            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
+            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
+            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
+            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.mainLayout.Controls.Add(this.lblTitle, 0, 0);
+            this.mainLayout.SetColumnSpan(this.lblTitle, 5);
+            this.mainLayout.Controls.Add(this.txtNodeId, 0, 1);
+            this.mainLayout.Controls.Add(this.txtState, 1, 1);
+            this.mainLayout.Controls.Add(this.txtSendCount, 2, 1);
+            this.mainLayout.Controls.Add(this.txtReceiveCount, 3, 1);
+            this.mainLayout.Controls.Add(this.chkContinuously, 0, 2);
+            this.mainLayout.Controls.Add(this.chkAuto, 1, 2);
+            this.mainLayout.Controls.Add(this.connectButton, 4, 2);
+            this.mainLayout.Controls.Add(this.commandsGroup, 0, 3);
+            this.mainLayout.Controls.Add(this.statusGroup, 3, 3);
+            this.mainLayout.SetColumnSpan(this.commandsGroup, 3);
+            this.mainLayout.SetColumnSpan(this.statusGroup, 2);
+            this.mainLayout.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mainLayout.Location = new System.Drawing.Point(0, 0);
+            this.mainLayout.Name = "mainLayout";
+            this.mainLayout.RowCount = 4;
+            this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.mainLayout.Size = new System.Drawing.Size(800, 450);
+
+            // connectButton
+            this.connectButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.connectButton.Location = new System.Drawing.Point(603, 73);
+            this.connectButton.Name = "connectButton";
+            this.connectButton.Size = new System.Drawing.Size(75, 23);
+            this.connectButton.TabIndex = 0;
+            this.connectButton.Text = "Connect";
+            this.connectButton.UseVisualStyleBackColor = true;
+            this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
+
+            // txtNodeId
+            this.txtNodeId.Location = new System.Drawing.Point(3, 43);
+            this.txtNodeId.Name = "txtNodeId";
+            this.txtNodeId.Size = new System.Drawing.Size(100, 20);
+            this.txtNodeId.TabIndex = 1;
+            this.txtNodeId.PlaceholderText = "Node ID";
+
+            // txtState
+            this.txtState.Location = new System.Drawing.Point(123, 43);
+            this.txtState.Name = "txtState";
+            this.txtState.Size = new System.Drawing.Size(100, 20);
+            this.txtState.TabIndex = 2;
+            this.txtState.PlaceholderText = "State";
+
+            // txtSendCount
+            this.txtSendCount.Location = new System.Drawing.Point(243, 43);
+            this.txtSendCount.Name = "txtSendCount";
+            this.txtSendCount.Size = new System.Drawing.Size(100, 20);
+            this.txtSendCount.TabIndex = 3;
+            this.txtSendCount.PlaceholderText = "Send Count";
+
+            // txtReceiveCount
+            this.txtReceiveCount.Location = new System.Drawing.Point(363, 43);
+            this.txtReceiveCount.Name = "txtReceiveCount";
+            this.txtReceiveCount.Size = new System.Drawing.Size(100, 20);
+            this.txtReceiveCount.TabIndex = 4;
+            this.txtReceiveCount.PlaceholderText = "Receive Count";
+
+            // chkContinuously
+            this.chkContinuously.Location = new System.Drawing.Point(3, 73);
+            this.chkContinuously.Name = "chkContinuously";
+            this.chkContinuously.Size = new System.Drawing.Size(100, 20);
+            this.chkContinuously.TabIndex = 5;
+            this.chkContinuously.Text = "Continuously";
+            this.chkContinuously.UseVisualStyleBackColor = true;
+            this.chkContinuously.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+
+            // chkAuto
+            this.chkAuto.Location = new System.Drawing.Point(123, 73);
+            this.chkAuto.Name = "chkAuto";
+            this.chkAuto.Size = new System.Drawing.Size(50, 20);
+            this.chkAuto.TabIndex = 6;
+            this.chkAuto.Text = "Auto";
+            this.chkAuto.UseVisualStyleBackColor = true;
+            this.chkAuto.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+
+            // commandsGroup
+            this.commandsGroup.Location = new System.Drawing.Point(3, 103);
+            this.commandsGroup.Name = "commandsGroup";
+            this.commandsGroup.Size = new System.Drawing.Size(394, 344);
+            this.commandsGroup.Text = "Commands (Send to device)";
+            this.commandsGroup.Padding = new System.Windows.Forms.Padding(10);
+
+            // statusGroup
+            this.statusGroup.Location = new System.Drawing.Point(403, 103);
+            this.statusGroup.Name = "statusGroup";
+            this.statusGroup.Size = new System.Drawing.Size(394, 344);
+            this.statusGroup.Text = "Status (Receive from device)";
+            this.statusGroup.Padding = new System.Windows.Forms.Padding(10);
+
+            // Form1
+            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.mainLayout);
+            this.Name = "Form1";
+            this.Text = "CAN Bus Communication";
+            this.ResumeLayout(false);
+            this.PerformLayout();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}
+
+
+# Form1.resx
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema 
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+</root>
+
+# Program.cs
+namespace CanBusApp;
+
+static class Program
+{
+    /// <summary>
+    ///  The main entry point for the application.
+    /// </summary>
+    [STAThread]
+    static void Main()
+    {
+        // To customize application configuration such as set high DPI settings or default font,
+        // see https://aka.ms/applicationconfiguration.
+        ApplicationConfiguration.Initialize();
+        Application.Run(new Form1());
+    }    
+}
+
+# CanBusApp.deps.json
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "CanBusApp/1.0.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "CanBusApp.dll": {}
+        }
+      },
+      "Newtonsoft.Json/13.0.3": {
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.3.27908"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "CanBusApp/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Newtonsoft.Json/13.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
+      "path": "newtonsoft.json/13.0.3",
+      "hashPath": "newtonsoft.json.13.0.3.nupkg.sha512"
+    }
+  }
+}
+
+# CanBusApp.runtimeconfig.json
+{
+  "runtimeOptions": {
+    "tfm": "net8.0",
+    "frameworks": [
+      {
+        "name": "Microsoft.NETCore.App",
+        "version": "8.0.0"
+      },
+      {
+        "name": "Microsoft.WindowsDesktop.App",
+        "version": "8.0.0"
+      }
+    ],
+    "configProperties": {
+      "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": true
+    }
+  }
+}
+
+# commands_config.json
+﻿{
+  "commands": [
+    {
+      "label": "Command 1",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 1"
+    },
+    {
+      "label": "Command 3",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 4"
+    },
+    {
+      "label": "Command 4",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 3"
+    },
+    {
+      "label": "Command 5",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 1"
+    }
+  ],
+  "status": [
+    {
+      "label": "Status 1",
+      "defaultValue": "Initial Status 1"
+    },
+    {
+      "label": "Status 2",
+      "defaultValue": "Initial Status 2"
+    },
+    {
+      "label": "Status 3",
+      "defaultValue": "Initial Status 3"
+    },
+    {
+      "label": "Status 4",
+      "defaultValue": "Initial Status 4"
+    }
+  ]
+}
+
+
+# CanBusApp.csproj.nuget.dgspec.json
+{
+  "format": 1,
+  "restore": {
+    "C:\\dev\\projects\\CANSim\\CanBusApp\\CanBusApp\\CanBusApp.csproj": {}
+  },
+  "projects": {
+    "C:\\dev\\projects\\CANSim\\CanBusApp\\CanBusApp\\CanBusApp.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\dev\\projects\\CANSim\\CanBusApp\\CanBusApp\\CanBusApp.csproj",
+        "projectName": "CanBusApp",
+        "projectPath": "C:\\dev\\projects\\CANSim\\CanBusApp\\CanBusApp\\CanBusApp.csproj",
+        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+        "outputPath": "C:\\dev\\projects\\CANSim\\CanBusApp\\CanBusApp\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0-windows"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0-windows7.0": {
+            "targetAlias": "net8.0-windows",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0-windows7.0": {
+          "targetAlias": "net8.0-windows",
+          "dependencies": {
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            },
+            "Microsoft.WindowsDesktop.App.WindowsForms": {
+              "privateAssets": "none"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
+
+# project.assets.json
+{
+  "version": 3,
+  "targets": {
+    "net8.0-windows7.0": {
+      "Newtonsoft.Json/13.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Newtonsoft.Json/13.0.3": {
+      "sha512": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
+      "type": "package",
+      "path": "newtonsoft.json/13.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "README.md",
+        "lib/net20/Newtonsoft.Json.dll",
+        "lib/net20/Newtonsoft.Json.xml",
+        "lib/net35/Newtonsoft.Json.dll",
+        "lib/net35/Newtonsoft.Json.xml",
+        "lib/net40/Newtonsoft.Json.dll",
+        "lib/net40/Newtonsoft.Json.xml",
+        "lib/net45/Newtonsoft.Json.dll",
+        "lib/net45/Newtonsoft.Json.xml",
+        "lib/net6.0/Newtonsoft.Json.dll",
+        "lib/net6.0/Newtonsoft.Json.xml",
+        "lib/netstandard1.0/Newtonsoft.Json.dll",
+        "lib/netstandard1.0/Newtonsoft.Json.xml",
+        "lib/netstandard1.3/Newtonsoft.Json.dll",
+        "lib/netstandard1.3/Newtonsoft.Json.xml",
+        "lib/netstandard2.0/Newtonsoft.Json.dll",
+        "lib/netstandard2.0/Newtonsoft.Json.xml",
+        "newtonsoft.json.13.0.3.nupkg.sha512",
+        "newtonsoft.json.nuspec",
+        "packageIcon.png"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net8.0-windows7.0": [
+      "Newtonsoft.Json >= 13.0.3"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\User\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\dev\\projects\\CANSim\\CanBusApp\\CanBusApp\\CanBusApp.csproj",
+      "projectName": "CanBusApp",
+      "projectPath": "C:\\dev\\projects\\CANSim\\CanBusApp\\CanBusApp\\CanBusApp.csproj",
+      "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+      "outputPath": "C:\\dev\\projects\\CANSim\\CanBusApp\\CanBusApp\\obj\\",
+      "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
+      "configFilePaths": [
+        "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net8.0-windows"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net8.0-windows7.0": {
+          "targetAlias": "net8.0-windows",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      }
+    },
+    "frameworks": {
+      "net8.0-windows7.0": {
+        "targetAlias": "net8.0-windows",
+        "dependencies": {
+          "Newtonsoft.Json": {
+            "target": "Package",
+            "version": "[13.0.3, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          },
+          "Microsoft.WindowsDesktop.App.WindowsForms": {
+            "privateAssets": "none"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300/PortableRuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}
+
+# .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+// <autogenerated />
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
+
+
+# CanBusApp.AssemblyInfo.cs
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by a tool.
+//     Runtime Version:4.0.30319.42000
+//
+//     Changes to this file may cause incorrect behavior and will be lost if
+//     the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+
+using System;
+using System.Reflection;
+
+[assembly: System.Reflection.AssemblyCompanyAttribute("CanBusApp")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fb767826dd36d488f9d927185616dc5c6f39f132")]
+[assembly: System.Reflection.AssemblyProductAttribute("CanBusApp")]
+[assembly: System.Reflection.AssemblyTitleAttribute("CanBusApp")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+[assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows7.0")]
+[assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows7.0")]
+
+// Generated by the MSBuild WriteCodeFragment class.
+
+
+
+# CanBusApp.designer.deps.json
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "Newtonsoft.Json/13.0.3": {
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.3.27908"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Newtonsoft.Json/13.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
+      "path": "newtonsoft.json/13.0.3",
+      "hashPath": "newtonsoft.json.13.0.3.nupkg.sha512"
+    }
+  }
+}
+
+# CanBusApp.designer.runtimeconfig.json
+{
+  "runtimeOptions": {
+    "tfm": "net8.0",
+    "frameworks": [
+      {
+        "name": "Microsoft.NETCore.App",
+        "version": "8.0.0"
+      },
+      {
+        "name": "Microsoft.WindowsDesktop.App",
+        "version": "8.0.0"
+      }
+    ],
+    "additionalProbingPaths": [
+      "C:\\Users\\User\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\User\\.nuget\\packages",
+      "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+    ],
+    "configProperties": {
+      "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization": true,
+      "Microsoft.NETCore.DotNetHostPolicy.SetAppPaths": true
+    }
+  }
+}
+
+# CanBusApp.GlobalUsings.g.cs
+// <auto-generated/>
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.Drawing;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+global using global::System.Windows.Forms;
+
+
+# CanBusApp.sourcelink.json
+{"documents":{"C:\\dev\\projects\\CANSim\\CanBusApp\\*":"https://raw.githubusercontent.com/DebugDuckling/CanBusApp/fb767826dd36d488f9d927185616dc5c6f39f132/*"}}
+

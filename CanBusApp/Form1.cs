@@ -11,12 +11,14 @@ namespace CanBusApp
         private CanBusModel model;
         private Dictionary<string, ComboBox> commandComboBoxes = new Dictionary<string, ComboBox>();
         private Dictionary<string, TextBox> statusTextBoxes = new Dictionary<string, TextBox>();
+        private ArcnetIf arcnetInterface;
 
         public Form1()
         {
             InitializeComponent();
             model = ConfigLoader.LoadConfiguration("commands_config.json");
             InitializeDynamicComponents();
+            arcnetInterface = new ArcnetIf();
         }
 
         private void InitializeDynamicComponents()
@@ -78,37 +80,33 @@ namespace CanBusApp
 
         private void connectButton_Click(object sender, EventArgs e)
         {
-            var config = new COM20020_CONFIG
-            {
-                uiCom20020BaseIOAddress = 0x300,
-                byCom20020InterruptLevel = 5,
-                byCom20020Timeout = 0x18,
-                byCom20020NodeID = byte.Parse(txtNodeId.Text),
-                bCom20020_128NAKs = 0,
-                bCom20020ReceiveAll = 1,
-                byCom20020ClockPrescaler = 3,
-                bCom20020SlowArbitration = 0,
-                bCom20020ReceiveBroadcasts = 1
-            };
+            byte nodeId = byte.Parse(txtNodeId.Text);
+            byte broadcast = 1; // Example value
 
-            int result = ArcX.Com20020Init(ref config, 0, 0);
+            bool success = arcnetInterface.Open(nodeId, broadcast);
 
-            if (result == 0)
+            if (success)
             {
                 MessageBox.Show("Initialization successful.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                MessageBox.Show($"Initialization failed with error code: {result}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Initialization failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
+        private void closeButton_Click(object sender, EventArgs e)
+        {
+            arcnetInterface.Close();
+        }
+
         public string NodeId => txtNodeId.Text;
-        public string State => txtState.Text;
-        public int SendCount => int.Parse(txtSendCount.Text);
-        public int ReceiveCount => int.Parse(txtReceiveCount.Text);
-        public bool Continuously => chkContinuously.Checked;
-        public bool Auto => chkAuto.Checked;
+        public string Recons => txtRecons.Text;
+        public string TxState => txtTxState.Text;
+        public int TxFrames => int.Parse(txtTxFrames.Text);
+        public int RxFrames => int.Parse(txtRxFrames.Text);
+        public bool TxContinuous => chkTxContinuous.Checked;
+        public bool AutoUpdate => chkAutoUpdate.Checked;
 
         public List<Command> GetCommands()
         {
