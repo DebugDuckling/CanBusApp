@@ -2,46 +2,48 @@
   "commands": [
     {
       "label": "Command 1",
+      "type": "combobox",
       "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
       "defaultValue": "enum 2"
     },
     {
       "label": "Command 2",
-      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 1"
+      "```json": null,
+      "type": "checkbox",
+      "defaultValue": "true"
     },
     {
       "label": "Command 3",
-      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 4"
+      "type": "textbox",
+      "defaultValue": "default text"
     },
     {
       "label": "Command 4",
-      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 3"
-    },
-    {
-      "label": "Command 5",
-      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 1"
+      "type": "button",
+      "buttonText": "Click Me"
     }
   ],
   "status": [
     {
       "label": "Status 1",
-      "defaultValue": "Initial Status 1"
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1"
     },
     {
       "label": "Status 2",
-      "defaultValue": "Initial Status 2"
+      "type": "checkbox",
+      "defaultValue": "false"
     },
     {
       "label": "Status 3",
-      "defaultValue": "Initial Status 3"
+      "type": "textbox",
+      "defaultValue": "initial text"
     },
     {
       "label": "Status 4",
-      "defaultValue": "Initial Status 4"
+      "type": "button",
+      "buttonText": "Press"
     }
   ]
 }

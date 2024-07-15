@@ -9,8 +9,8 @@ namespace CanBusApp
     public partial class Form1 : Form
     {
         private CanBusModel model;
-        private Dictionary<string, ComboBox> commandComboBoxes = new Dictionary<string, ComboBox>();
-        private Dictionary<string, TextBox> statusTextBoxes = new Dictionary<string, TextBox>();
+        private Dictionary<string, Control> commandControls = new Dictionary<string, Control>();
+        private Dictionary<string, Control> statusControls = new Dictionary<string, Control>();
         private ArcnetIf arcnetInterface;
 
         public Form1()
@@ -35,21 +35,63 @@ namespace CanBusApp
                 };
                 commandsGroup.Controls.Add(label);
 
-                var comboBox = new ComboBox
+                Control control;
+                switch (command.Type)
                 {
-                    DataSource = command.Options,
-                    Location = new Point(150, yPosition),
-                    Width = 100,
-                    DropDownStyle = ComboBoxStyle.DropDownList // Ensure dropdown style
-                };
-                commandsGroup.Controls.Add(comboBox);
-                commandComboBoxes[command.Label] = comboBox;
+                    case "combobox":
+                        control = new ComboBox
+                        {
+                            DataSource = command.Options,
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            DropDownStyle = ComboBoxStyle.DropDownList
+                        };
+                        if (!string.IsNullOrEmpty(command.DefaultValue) && command.Options.Contains(command.DefaultValue))
+                        {
+                            ((ComboBox)control).SelectedItem = command.DefaultValue;
+                        }
+                        break;
 
-                // Set default value if it exists
-                if (!string.IsNullOrEmpty(command.DefaultValue) && command.Options.Contains(command.DefaultValue))
-                {
-                    comboBox.SelectedItem = command.DefaultValue;
+                    case "checkbox":
+                        control = new CheckBox
+                        {
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            Text = command.Label,
+                            Checked = bool.Parse(command.DefaultValue ?? "false")
+                        };
+                        break;
+
+                    case "textbox":
+                        control = new TextBox
+                        {
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            Text = command.DefaultValue
+                        };
+                        break;
+
+                    case "button":
+                        control = new Button
+                        {
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            Text = command.ButtonText
+                        };
+                        control.Click += (sender, e) => MessageBox.Show($"Button {command.Label} clicked!");
+                        break;
+
+                    default:
+                        control = new TextBox
+                        {
+                            Location = new Point(150, yPosition),
+                            Width = 100
+                        };
+                        break;
                 }
+
+                commandsGroup.Controls.Add(control);
+                commandControls[command.Label] = control;
 
                 yPosition += 30;
             }
@@ -65,14 +107,63 @@ namespace CanBusApp
                 };
                 statusGroup.Controls.Add(label);
 
-                var textBox = new TextBox
+                Control control;
+                switch (status.Type)
                 {
-                    Location = new Point(150, yPosition),
-                    Width = 100,
-                    Text = status.DefaultValue // Set default value
-                };
-                statusGroup.Controls.Add(textBox);
-                statusTextBoxes[status.Label] = textBox;
+                    case "combobox":
+                        control = new ComboBox
+                        {
+                            DataSource = status.Options,
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            DropDownStyle = ComboBoxStyle.DropDownList
+                        };
+                        if (!string.IsNullOrEmpty(status.DefaultValue) && status.Options.Contains(status.DefaultValue))
+                        {
+                            ((ComboBox)control).SelectedItem = status.DefaultValue;
+                        }
+                        break;
+
+                    case "checkbox":
+                        control = new CheckBox
+                        {
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            Text = status.Label,
+                            Checked = bool.Parse(status.DefaultValue ?? "false")
+                        };
+                        break;
+
+                    case "textbox":
+                        control = new TextBox
+                        {
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            Text = status.DefaultValue
+                        };
+                        break;
+
+                    case "button":
+                        control = new Button
+                        {
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            Text = status.ButtonText
+                        };
+                        control.Click += (sender, e) => MessageBox.Show($"Button {status.Label} clicked!");
+                        break;
+
+                    default:
+                        control = new TextBox
+                        {
+                            Location = new Point(150, yPosition),
+                            Width = 100
+                        };
+                        break;
+                }
+
+                statusGroup.Controls.Add(control);
+                statusControls[status.Label] = control;
 
                 yPosition += 30;
             }
@@ -95,25 +186,33 @@ namespace CanBusApp
             }
         }
 
-        private void closeButton_Click(object sender, EventArgs e)
+        private void updateButton_Click(object sender, EventArgs e)
         {
-            arcnetInterface.Close();
+            // Implement the update logic here
         }
 
         public string NodeId => txtNodeId.Text;
         public string Recons => txtRecons.Text;
         public string TxState => txtTxState.Text;
-        public int TxFrames => int.Parse(txtTxFrames.Text);
-        public int RxFrames => int.Parse(txtRxFrames.Text);
+        public string TxFrames => txtTxFrames.Text;
+        public string RxFrames => txtRxFrames.Text;
         public bool TxContinuous => chkTxContinuous.Checked;
         public bool AutoUpdate => chkAutoUpdate.Checked;
 
         public List<Command> GetCommands()
         {
             var commands = new List<Command>();
-            foreach (var kvp in commandComboBoxes)
+            foreach (var kvp in commandControls)
             {
-                commands.Add(new Command { Label = kvp.Key, Options = new List<string> { kvp.Value.SelectedItem?.ToString() } });
+                var control = kvp.Value;
+                string value = control switch
+                {
+                    ComboBox comboBox => comboBox.SelectedItem?.ToString(),
+                    CheckBox checkBox => checkBox.Checked.ToString(),
+                    TextBox textBox => textBox.Text,
+                    _ => string.Empty
+                };
+                commands.Add(new Command { Label = kvp.Key, DefaultValue = value });
             }
             return commands;
         }
@@ -121,13 +220,22 @@ namespace CanBusApp
         public List<Status> GetStatuses()
         {
             var statuses = new List<Status>();
-            foreach (var kvp in statusTextBoxes)
+            foreach (var kvp in statusControls)
             {
-                statuses.Add(new Status { Label = kvp.Key, DefaultValue = kvp.Value.Text });
+                var control = kvp.Value;
+                string value = control switch
+                {
+                    ComboBox comboBox => comboBox.SelectedItem?.ToString(),
+                    CheckBox checkBox => checkBox.Checked.ToString(),
+                    TextBox textBox => textBox.Text,
+                    _ => string.Empty
+                };
+                statuses.Add(new Status { Label = kvp.Key, DefaultValue = value });
             }
             return statuses;
         }
 
         public Button ConnectButton => this.connectButton;
+        public Button UpdateButton => this.updateButton;
     }
 }

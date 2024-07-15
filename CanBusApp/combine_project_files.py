@@ -5,7 +5,8 @@ project_dir = '.'
 output_file = 'combined_project.txt'
 
 # Define the file extensions to include in the combined file
-file_extensions = ['.cs', '.json', '.csproj', '.config', '.xml', '.xaml', '.resx']
+# file_extensions = ['.cs', '.json', '.csproj', '.config', '.xml', '.xaml', '.resx']
+file_extensions = ['.cs', '.json']
 
 # Define a function to check if a file should be included
 def should_include_file(file_name):

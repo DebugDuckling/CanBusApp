@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace CanBusApp
 {
@@ -6,8 +8,6 @@ namespace CanBusApp
     {
         private System.ComponentModel.IContainer components = null;
         private Button connectButton;
-        private Button closeButton;
-        private Button updateButton;
         private TextBox txtNodeId;
         private TextBox txtRecons;
         private TextBox txtTxState;
@@ -17,229 +17,193 @@ namespace CanBusApp
         private CheckBox chkAutoUpdate;
         private Label lblTitle;
         private TableLayoutPanel mainLayout;
-        private GroupBox arcnetGroup;
+        private TableLayoutPanel topLayout;
+        private TableLayoutPanel bottomLayout;
         private GroupBox commandsGroup;
         private GroupBox statusGroup;
+        private GroupBox arcnetGroup;
         private GroupBox optionsGroup;
-        private Label lblNodeId;
-        private Label lblRecons;
-        private Label lblTxState;
-        private Label lblTxFrames;
-        private Label lblRxFrames;
+        private Button updateButton;
 
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.connectButton = new System.Windows.Forms.Button();
-            this.closeButton = new System.Windows.Forms.Button();
-            this.updateButton = new System.Windows.Forms.Button();
-            this.txtNodeId = new System.Windows.Forms.TextBox();
-            this.txtRecons = new System.Windows.Forms.TextBox();
-            this.txtTxState = new System.Windows.Forms.TextBox();
-            this.txtTxFrames = new System.Windows.Forms.TextBox();
-            this.txtRxFrames = new System.Windows.Forms.TextBox();
-            this.chkTxContinuous = new System.Windows.Forms.CheckBox();
-            this.chkAutoUpdate = new System.Windows.Forms.CheckBox();
-            this.lblTitle = new System.Windows.Forms.Label();
-            this.mainLayout = new System.Windows.Forms.TableLayoutPanel();
-            this.arcnetGroup = new System.Windows.Forms.GroupBox();
-            this.commandsGroup = new System.Windows.Forms.GroupBox();
-            this.statusGroup = new System.Windows.Forms.GroupBox();
-            this.optionsGroup = new System.Windows.Forms.GroupBox();
-            this.lblNodeId = new System.Windows.Forms.Label();
-            this.lblRecons = new System.Windows.Forms.Label();
-            this.lblTxState = new System.Windows.Forms.Label();
-            this.lblTxFrames = new System.Windows.Forms.Label();
-            this.lblRxFrames = new System.Windows.Forms.Label();
+            this.connectButton = new Button();
+            this.txtNodeId = new TextBox();
+            this.txtRecons = new TextBox();
+            this.txtTxState = new TextBox();
+            this.txtTxFrames = new TextBox();
+            this.txtRxFrames = new TextBox();
+            this.chkTxContinuous = new CheckBox();
+            this.chkAutoUpdate = new CheckBox();
+            this.lblTitle = new Label();
+            this.mainLayout = new TableLayoutPanel();
+            this.topLayout = new TableLayoutPanel();
+            this.bottomLayout = new TableLayoutPanel();
+            this.commandsGroup = new GroupBox();
+            this.statusGroup = new GroupBox();
+            this.arcnetGroup = new GroupBox();
+            this.optionsGroup = new GroupBox();
+            this.updateButton = new Button();
 
             this.SuspendLayout();
 
             // lblTitle
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
-            this.lblTitle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblTitle.Text = "ARCNET Simulator";
-            this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblTitle.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            this.lblTitle.Dock = DockStyle.Fill;
+            this.lblTitle.Text = "CAN Bus Communication";
+            this.lblTitle.TextAlign = ContentAlignment.MiddleCenter;
 
             // mainLayout
-            this.mainLayout.ColumnCount = 6;
-            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
-            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
-            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
-            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
-            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.mainLayout.ColumnCount = 1;
+            this.mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             this.mainLayout.Controls.Add(this.lblTitle, 0, 0);
-            this.mainLayout.SetColumnSpan(this.lblTitle, 6);
-            this.mainLayout.Controls.Add(this.arcnetGroup, 0, 1);
-            this.mainLayout.SetColumnSpan(this.arcnetGroup, 3);
-            this.mainLayout.Controls.Add(this.optionsGroup, 3, 1);
-            this.mainLayout.SetColumnSpan(this.optionsGroup, 3);
-            this.mainLayout.Controls.Add(this.commandsGroup, 0, 2);
-            this.mainLayout.Controls.Add(this.statusGroup, 3, 2);
-            this.mainLayout.SetColumnSpan(this.commandsGroup, 3);
-            this.mainLayout.SetColumnSpan(this.statusGroup, 3);
-            this.mainLayout.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mainLayout.Location = new System.Drawing.Point(0, 0);
+            this.mainLayout.Controls.Add(this.topLayout, 0, 1);
+            this.mainLayout.Controls.Add(this.bottomLayout, 0, 2);
+            this.mainLayout.Dock = DockStyle.Fill;
+            this.mainLayout.Location = new Point(0, 0);
             this.mainLayout.Name = "mainLayout";
             this.mainLayout.RowCount = 3;
-            this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 150F));
-            this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.mainLayout.Size = new System.Drawing.Size(800, 450);
+            this.mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            this.mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            this.mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            this.mainLayout.Size = new Size(800, 450);
+
+            // topLayout
+            this.topLayout.ColumnCount = 2;
+            this.topLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 80F));
+            this.topLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
+            this.topLayout.Controls.Add(this.arcnetGroup, 0, 0);
+            this.topLayout.Controls.Add(this.optionsGroup, 1, 0);
+            this.topLayout.Dock = DockStyle.Fill;
+            this.topLayout.Location = new Point(3, 43);
+            this.topLayout.Name = "topLayout";
+            this.topLayout.RowCount = 1;
+            this.topLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            this.topLayout.Size = new Size(794, 199);
+
+            // bottomLayout
+            this.bottomLayout.ColumnCount = 2;
+            this.bottomLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 80F));
+            this.bottomLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
+            this.bottomLayout.Controls.Add(this.commandsGroup, 0, 0);
+            this.bottomLayout.Controls.Add(this.statusGroup, 1, 0);
+            this.bottomLayout.Dock = DockStyle.Fill;
+            this.bottomLayout.Location = new Point(3, 248);
+            this.bottomLayout.Name = "bottomLayout";
+            this.bottomLayout.RowCount = 1;
+            this.bottomLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            this.bottomLayout.Size = new Size(794, 199);
 
             // arcnetGroup
-            this.arcnetGroup.Controls.Add(this.lblNodeId);
             this.arcnetGroup.Controls.Add(this.txtNodeId);
-            this.arcnetGroup.Controls.Add(this.lblRecons);
             this.arcnetGroup.Controls.Add(this.txtRecons);
-            this.arcnetGroup.Controls.Add(this.lblTxState);
             this.arcnetGroup.Controls.Add(this.txtTxState);
-            this.arcnetGroup.Controls.Add(this.lblTxFrames);
             this.arcnetGroup.Controls.Add(this.txtTxFrames);
-            this.arcnetGroup.Controls.Add(this.lblRxFrames);
             this.arcnetGroup.Controls.Add(this.txtRxFrames);
             this.arcnetGroup.Controls.Add(this.connectButton);
-            this.arcnetGroup.Controls.Add(this.closeButton);
-            this.arcnetGroup.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.arcnetGroup.Location = new System.Drawing.Point(3, 43);
+            this.arcnetGroup.Dock = DockStyle.Fill;
+            this.arcnetGroup.Location = new Point(3, 3);
             this.arcnetGroup.Name = "arcnetGroup";
-            this.arcnetGroup.Size = new System.Drawing.Size(394, 144); // Adjusted size to fit next to optionsGroup
-            this.arcnetGroup.TabIndex = 0;
-            this.arcnetGroup.TabStop = false;
+            this.arcnetGroup.Size = new Size(629, 193);
             this.arcnetGroup.Text = "ARCNET";
 
-            // lblNodeId
-            this.lblNodeId.Location = new System.Drawing.Point(10, 20);
-            this.lblNodeId.Name = "lblNodeId";
-            this.lblNodeId.Size = new System.Drawing.Size(100, 20);
-            this.lblNodeId.Text = "Node Id";
-
             // txtNodeId
-            this.txtNodeId.Location = new System.Drawing.Point(10, 40);
+            this.txtNodeId.Location = new Point(20, 30);
             this.txtNodeId.Name = "txtNodeId";
-            this.txtNodeId.Size = new System.Drawing.Size(100, 20);
+            this.txtNodeId.Size = new Size(100, 20);
             this.txtNodeId.TabIndex = 1;
-
-            // lblRecons
-            this.lblRecons.Location = new System.Drawing.Point(120, 20);
-            this.lblRecons.Name = "lblRecons";
-            this.lblRecons.Size = new System.Drawing.Size(100, 20);
-            this.lblRecons.Text = "Recons";
+            this.txtNodeId.PlaceholderText = "Node ID";
 
             // txtRecons
-            this.txtRecons.Location = new System.Drawing.Point(120, 40);
+            this.txtRecons.Location = new Point(140, 30);
             this.txtRecons.Name = "txtRecons";
-            this.txtRecons.Size = new System.Drawing.Size(100, 20);
+            this.txtRecons.Size = new Size(100, 20);
             this.txtRecons.TabIndex = 2;
-
-            // lblTxState
-            this.lblTxState.Location = new System.Drawing.Point(230, 20);
-            this.lblTxState.Name = "lblTxState";
-            this.lblTxState.Size = new System.Drawing.Size(100, 20);
-            this.lblTxState.Text = "TX State";
+            this.txtRecons.PlaceholderText = "Recons";
 
             // txtTxState
-            this.txtTxState.Location = new System.Drawing.Point(230, 40);
+            this.txtTxState.Location = new Point(260, 30);
             this.txtTxState.Name = "txtTxState";
-            this.txtTxState.Size = new System.Drawing.Size(100, 20);
+            this.txtTxState.Size = new Size(100, 20);
             this.txtTxState.TabIndex = 3;
-
-            // lblTxFrames
-            this.lblTxFrames.Location = new System.Drawing.Point(340, 20);
-            this.lblTxFrames.Name = "lblTxFrames";
-            this.lblTxFrames.Size = new System.Drawing.Size(100, 20);
-            this.lblTxFrames.Text = "TX Frames";
+            this.txtTxState.PlaceholderText = "TX State";
 
             // txtTxFrames
-            this.txtTxFrames.Location = new System.Drawing.Point(340, 40);
+            this.txtTxFrames.Location = new Point(380, 30);
             this.txtTxFrames.Name = "txtTxFrames";
-            this.txtTxFrames.Size = new System.Drawing.Size(100, 20);
+            this.txtTxFrames.Size = new Size(100, 20);
             this.txtTxFrames.TabIndex = 4;
-
-            // lblRxFrames
-            this.lblRxFrames.Location = new System.Drawing.Point(450, 20);
-            this.lblRxFrames.Name = "lblRxFrames";
-            this.lblRxFrames.Size = new System.Drawing.Size(100, 20);
-            this.lblRxFrames.Text = "RX Frames";
+            this.txtTxFrames.PlaceholderText = "TX Frames";
 
             // txtRxFrames
-            this.txtRxFrames.Location = new System.Drawing.Point(450, 40);
+            this.txtRxFrames.Location = new Point(500, 30);
             this.txtRxFrames.Name = "txtRxFrames";
-            this.txtRxFrames.Size = new System.Drawing.Size(100, 20);
+            this.txtRxFrames.Size = new Size(100, 20);
             this.txtRxFrames.TabIndex = 5;
+            this.txtRxFrames.PlaceholderText = "RX Frames";
 
             // connectButton
-            this.connectButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.connectButton.Location = new System.Drawing.Point(10, 70);
+            this.connectButton.FlatStyle = FlatStyle.Flat;
+            this.connectButton.Location = new Point(260, 60);
             this.connectButton.Name = "connectButton";
-            this.connectButton.Size = new System.Drawing.Size(75, 23);
+            this.connectButton.Size = new Size(75, 23);
             this.connectButton.TabIndex = 6;
             this.connectButton.Text = "Connect";
             this.connectButton.UseVisualStyleBackColor = true;
-
-            // closeButton
-            this.closeButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.closeButton.Location = new System.Drawing.Point(90, 70);
-            this.closeButton.Name = "closeButton";
-            this.closeButton.Size = new System.Drawing.Size(75, 23);
-            this.closeButton.TabIndex = 7;
-            this.closeButton.Text = "Close";
-            this.closeButton.UseVisualStyleBackColor = true;
+            this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
 
             // optionsGroup
             this.optionsGroup.Controls.Add(this.chkTxContinuous);
             this.optionsGroup.Controls.Add(this.chkAutoUpdate);
             this.optionsGroup.Controls.Add(this.updateButton);
-            this.optionsGroup.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.optionsGroup.Location = new System.Drawing.Point(403, 43);
+            this.optionsGroup.Dock = DockStyle.Fill;
+            this.optionsGroup.Location = new Point(638, 3);
             this.optionsGroup.Name = "optionsGroup";
-            this.optionsGroup.Size = new System.Drawing.Size(394, 144); // Adjusted size to fit next to arcnetGroup
-            this.optionsGroup.TabIndex = 1;
-            this.optionsGroup.TabStop = false;
+            this.optionsGroup.Size = new Size(153, 193);
             this.optionsGroup.Text = "Options";
 
             // chkTxContinuous
-            this.chkTxContinuous.Location = new System.Drawing.Point(10, 20);
+            this.chkTxContinuous.Location = new Point(20, 30);
             this.chkTxContinuous.Name = "chkTxContinuous";
-            this.chkTxContinuous.Size = new System.Drawing.Size(100, 20);
-            this.chkTxContinuous.TabIndex = 0;
+            this.chkTxContinuous.Size = new Size(120, 20);
+            this.chkTxContinuous.TabIndex = 7;
             this.chkTxContinuous.Text = "TX Continuous";
             this.chkTxContinuous.UseVisualStyleBackColor = true;
+            this.chkTxContinuous.FlatStyle = FlatStyle.Flat;
 
             // chkAutoUpdate
-            this.chkAutoUpdate.Location = new System.Drawing.Point(10, 50);
+            this.chkAutoUpdate.Location = new Point(20, 60);
             this.chkAutoUpdate.Name = "chkAutoUpdate";
-            this.chkAutoUpdate.Size = new System.Drawing.Size(100, 20);
-            this.chkAutoUpdate.TabIndex = 1;
+            this.chkAutoUpdate.Size = new Size(120, 20);
+            this.chkAutoUpdate.TabIndex = 8;
             this.chkAutoUpdate.Text = "Auto Update";
             this.chkAutoUpdate.UseVisualStyleBackColor = true;
+            this.chkAutoUpdate.FlatStyle = FlatStyle.Flat;
 
             // updateButton
-            this.updateButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.updateButton.Location = new System.Drawing.Point(10, 80);
+            this.updateButton.FlatStyle = FlatStyle.Flat;
+            this.updateButton.Location = new Point(20, 90);
             this.updateButton.Name = "updateButton";
-            this.updateButton.Size = new System.Drawing.Size(75, 23);
-            this.updateButton.TabIndex = 2;
+            this.updateButton.Size = new Size(75, 23);
+            this.updateButton.TabIndex = 9;
             this.updateButton.Text = "Update";
             this.updateButton.UseVisualStyleBackColor = true;
+            this.updateButton.Click += new System.EventHandler(this.updateButton_Click);
 
             // commandsGroup
-            this.commandsGroup.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.commandsGroup.Location = new System.Drawing.Point(3, 193);
+            this.commandsGroup.Dock = DockStyle.Fill;
+            this.commandsGroup.Location = new Point(3, 3);
             this.commandsGroup.Name = "commandsGroup";
-            this.commandsGroup.Size = new System.Drawing.Size(394, 254);
-            this.commandsGroup.TabIndex = 2;
-            this.commandsGroup.TabStop = false;
-            this.commandsGroup.Text = "Commands";
+            this.commandsGroup.Size = new Size(634, 193);
+            this.commandsGroup.Text = "Commands (Send to device)";
 
             // statusGroup
-            this.statusGroup.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.statusGroup.Location = new System.Drawing.Point(403, 193);
+            this.statusGroup.Dock = DockStyle.Fill;
+            this.statusGroup.Location = new Point(643, 3);
             this.statusGroup.Name = "statusGroup";
-            this.statusGroup.Size = new System.Drawing.Size(394, 254);
-            this.statusGroup.TabIndex = 3;
-            this.statusGroup.TabStop = false;
-            this.statusGroup.Text = "Status";
+            this.statusGroup.Size = new Size(148, 193);
+            this.statusGroup.Text = "Status (Receive from device)";
 
             // Form1
             this.ClientSize = new System.Drawing.Size(800, 450);

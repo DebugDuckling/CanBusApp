@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace CanBusApp
 {
@@ -14,18 +13,28 @@ namespace CanBusApp
             this.view = view;
 
             view.ConnectButton.Click += ConnectButton_Click;
+            view.UpdateButton.Click += UpdateButton_Click;
         }
 
         private void ConnectButton_Click(object sender, EventArgs e)
         {
             model.NodeId = view.NodeId;
-            model.Continuously = view.TxContinuous;
+            model.Recons = view.Recons;
+            model.TxState = view.TxState;
+            model.TxFrames = view.TxFrames;
+            model.RxFrames = view.RxFrames;
+            model.TxContinuous = view.TxContinuous;
             model.AutoUpdate = view.AutoUpdate;
             model.Commands = view.GetCommands();
             model.Statuses = view.GetStatuses();
 
             MessageBox.Show("Data collected and stored in buffer.");
         }
-    }
 
+        private void UpdateButton_Click(object sender, EventArgs e)
+        {
+            // Implement the update logic here
+            MessageBox.Show("Update button clicked.");
+        }
+    }
 }

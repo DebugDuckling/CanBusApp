@@ -345,30 +345,6 @@ namespace ArcnetDriver
 }
 
 
-# CanBusApp.csproj
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <PlatformTarget>x86</PlatformTarget>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="commands_config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-</Project>
-
-
 # CanBusController.cs
 ﻿using System;
 using System.Windows.Forms;
@@ -391,51 +367,40 @@ namespace CanBusApp
         private void ConnectButton_Click(object sender, EventArgs e)
         {
             model.NodeId = view.NodeId;
-            model.State = view.State;
-            model.SendCount = view.SendCount;
-            model.ReceiveCount = view.ReceiveCount;
-            model.Continuously = view.Continuously;
-            model.Auto = view.Auto;
+            model.Continuously = view.TxContinuous;
+            model.AutoUpdate = view.AutoUpdate;
             model.Commands = view.GetCommands();
             model.Statuses = view.GetStatuses();
 
             MessageBox.Show("Data collected and stored in buffer.");
         }
     }
+
 }
 
 
 # CanBusModel.cs
-﻿using System.Collections.Generic;
-
-public class CanBusModel
+﻿public class CanBusModel
 {
     public string NodeId { get; set; }
-    public string State { get; set; }
-    public int SendCount { get; set; }
-    public int ReceiveCount { get; set; }
     public bool Continuously { get; set; }
-    public bool Auto { get; set; }
-    public List<Command> Commands { get; set; } = new List<Command>();
-    public bool Mode { get; set; }
-    public bool Enabler1 { get; set; }
-    public bool Enabler2 { get; set; }
-    public string Val1 { get; set; }
-    public string Val2 { get; set; }
-    public List<Status> Statuses { get; set; } = new List<Status>();
+    public bool AutoUpdate { get; set; }
+    public List<ControlItem> Commands { get; set; } = new List<ControlItem>();
+    public List<ControlItem> Statuses { get; set; } = new List<ControlItem>();
+    public string Recons { get; set; } // Added Recons property
+    public string TxState { get; set; } // Added TxState property
+    public string TxFrames { get; set; } // Added TxFrames property
+    public string RxFrames { get; set; } // Added RxFrames property
 }
 
-public class Command
+public class ControlItem
 {
     public string Label { get; set; }
+    public string Type { get; set; } // combobox, textbox, checkbox, button
     public List<string> Options { get; set; }
     public string DefaultValue { get; set; }
-}
-
-public class Status
-{
-    public string Label { get; set; }
-    public string DefaultValue { get; set; }
+    public bool DefaultChecked { get; set; }
+    public string ButtonText { get; set; }
 }
 
 
@@ -444,46 +409,42 @@ public class Status
   "commands": [
     {
       "label": "Command 1",
+      "type": "combobox",
       "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
       "defaultValue": "enum 2"
     },
     {
       "label": "Command 2",
-      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 1"
+      "type": "textbox",
+      "defaultValue": "Some text"
     },
     {
       "label": "Command 3",
-      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 4"
+      "type": "checkbox",
+      "defaultValue": true
     },
     {
       "label": "Command 4",
-      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 3"
-    },
-    {
-      "label": "Command 5",
-      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 1"
+      "type": "button",
+      "buttonText": "Click me"
     }
   ],
   "status": [
     {
       "label": "Status 1",
+      "type": "textbox",
       "defaultValue": "Initial Status 1"
     },
     {
       "label": "Status 2",
-      "defaultValue": "Initial Status 2"
+      "type": "combobox",
+      "options": [ "option 1", "option 2" ],
+      "defaultValue": "option 1"
     },
     {
       "label": "Status 3",
-      "defaultValue": "Initial Status 3"
-    },
-    {
-      "label": "Status 4",
-      "defaultValue": "Initial Status 4"
+      "type": "checkbox",
+      "defaultValue": false
     }
   ]
 }
@@ -494,24 +455,21 @@ public class Status
 using System.IO;
 using Newtonsoft.Json;
 
-public static class ConfigLoader
+public static CanBusModel LoadConfiguration(string path)
 {
-    public static CanBusModel LoadConfiguration(string path)
-    {
-        var json = File.ReadAllText(path);
-        var config = JsonConvert.DeserializeObject<ConfigModel>(json);
-        return new CanBusModel
-        {
-            Commands = config.Commands,
-            Statuses = config.Status
-        };
-    }
+var json = File.ReadAllText(path);
+var config = JsonConvert.DeserializeObject<ConfigModel>(json);
+return new CanBusModel
+{
+Commands = config.Commands,
+Statuses = config.Statuses
+};
 }
 
 public class ConfigModel
 {
-    public List<Command> Commands { get; set; }
-    public List<Status> Status { get; set; }
+    public List<ControlItem> Commands { get; set; }
+    public List<ControlItem> Statuses { get; set; }
 }
 
 
@@ -527,8 +485,8 @@ namespace CanBusApp
     public partial class Form1 : Form
     {
         private CanBusModel model;
-        private Dictionary<string, ComboBox> commandComboBoxes = new Dictionary<string, ComboBox>();
-        private Dictionary<string, TextBox> statusTextBoxes = new Dictionary<string, TextBox>();
+        private Dictionary<string, Control> commandControls = new Dictionary<string, Control>();
+        private Dictionary<string, Control> statusControls = new Dictionary<string, Control>();
         private ArcnetIf arcnetInterface;
 
         public Form1()
@@ -553,20 +511,52 @@ namespace CanBusApp
                 };
                 commandsGroup.Controls.Add(label);
 
-                var comboBox = new ComboBox
+                Control control = null;
+                switch (command.Type)
                 {
-                    DataSource = command.Options,
-                    Location = new Point(150, yPosition),
-                    Width = 100,
-                    DropDownStyle = ComboBoxStyle.DropDownList // Ensure dropdown style
-                };
-                commandsGroup.Controls.Add(comboBox);
-                commandComboBoxes[command.Label] = comboBox;
+                    case "combobox":
+                        var comboBox = new ComboBox
+                        {
+                            DataSource = command.Options,
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            DropDownStyle = ComboBoxStyle.DropDownList // Ensure dropdown style
+                        };
+                        comboBox.SelectedItem = command.DefaultValue;
+                        control = comboBox;
+                        break;
+                    case "textbox":
+                        var textBox = new TextBox
+                        {
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            Text = command.DefaultValue // Set default value
+                        };
+                        control = textBox;
+                        break;
+                    case "checkbox":
+                        var checkBox = new CheckBox
+                        {
+                            Location = new Point(150, yPosition),
+                            Checked = command.DefaultChecked
+                        };
+                        control = checkBox;
+                        break;
+                    case "button":
+                        var button = new Button
+                        {
+                            Location = new Point(150, yPosition),
+                            Text = command.ButtonText
+                        };
+                        button.Click += (s, e) => MessageBox.Show($"{command.Label} button clicked");
+                        control = button;
+                        break;
+                }
 
-                // Set default value if it exists
-                if (!string.IsNullOrEmpty(command.DefaultValue) && command.Options.Contains(command.DefaultValue))
+                if (control != null)
                 {
-                    comboBox.SelectedItem = command.DefaultValue;
+                    commandsGroup.Controls.Add(control);
+                    commandControls[command.Label] = control;
                 }
 
                 yPosition += 30;
@@ -583,14 +573,44 @@ namespace CanBusApp
                 };
                 statusGroup.Controls.Add(label);
 
-                var textBox = new TextBox
+                Control control = null;
+                switch (status.Type)
                 {
-                    Location = new Point(150, yPosition),
-                    Width = 100,
-                    Text = status.DefaultValue // Set default value
-                };
-                statusGroup.Controls.Add(textBox);
-                statusTextBoxes[status.Label] = textBox;
+                    case "combobox":
+                        var comboBox = new ComboBox
+                        {
+                            DataSource = status.Options,
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            DropDownStyle = ComboBoxStyle.DropDownList // Ensure dropdown style
+                        };
+                        comboBox.SelectedItem = status.DefaultValue;
+                        control = comboBox;
+                        break;
+                    case "textbox":
+                        var textBox = new TextBox
+                        {
+                            Location = new Point(150, yPosition),
+                            Width = 100,
+                            Text = status.DefaultValue // Set default value
+                        };
+                        control = textBox;
+                        break;
+                    case "checkbox":
+                        var checkBox = new CheckBox
+                        {
+                            Location = new Point(150, yPosition),
+                            Checked = status.DefaultChecked
+                        };
+                        control = checkBox;
+                        break;
+                }
+
+                if (control != null)
+                {
+                    statusGroup.Controls.Add(control);
+                    statusControls[status.Label] = control;
+                }
 
                 yPosition += 30;
             }
@@ -619,28 +639,69 @@ namespace CanBusApp
         }
 
         public string NodeId => txtNodeId.Text;
-        public string State => txtState.Text;
+        public string Recons => txtRecons.Text;
+        public string TxState => txtTxState.Text;
+        public int TxFrames => int.Parse(txtTxFrames.Text);
+        public int RxFrames => int.Parse(txtRxFrames.Text);
+        public bool TxContinuous => chkTxContinuous.Checked;
+        public bool AutoUpdate => chkAutoUpdate.Checked;
         public int SendCount => int.Parse(txtSendCount.Text);
         public int ReceiveCount => int.Parse(txtReceiveCount.Text);
-        public bool Continuously => chkContinuously.Checked;
-        public bool Auto => chkAuto.Checked;
 
-        public List<Command> GetCommands()
+        public List<ControlItem> GetCommands()
         {
-            var commands = new List<Command>();
-            foreach (var kvp in commandComboBoxes)
+            var commands = new List<ControlItem>();
+            foreach (var kvp in commandControls)
             {
-                commands.Add(new Command { Label = kvp.Key, Options = new List<string> { kvp.Value.SelectedItem?.ToString() } });
+                var controlItem = new ControlItem
+                {
+                    Label = kvp.Key,
+                    Type = kvp.Value.GetType().Name.ToLower()
+                };
+
+                switch (controlItem.Type)
+                {
+                    case "combobox":
+                        controlItem.DefaultValue = (kvp.Value as ComboBox).SelectedItem?.ToString();
+                        break;
+                    case "textbox":
+                        controlItem.DefaultValue = (kvp.Value as TextBox).Text;
+                        break;
+                    case "checkbox":
+                        controlItem.DefaultChecked = (kvp.Value as CheckBox).Checked;
+                        break;
+                }
+
+                commands.Add(controlItem);
             }
             return commands;
         }
 
-        public List<Status> GetStatuses()
+        public List<ControlItem> GetStatuses()
         {
-            var statuses = new List<Status>();
-            foreach (var kvp in statusTextBoxes)
+            var statuses = new List<ControlItem>();
+            foreach (var kvp in statusControls)
             {
-                statuses.Add(new Status { Label = kvp.Key, DefaultValue = kvp.Value.Text });
+                var controlItem = new ControlItem
+                {
+                    Label = kvp.Key,
+                    Type = kvp.Value.GetType().Name.ToLower()
+                };
+
+                switch (controlItem.Type)
+                {
+                    case "combobox":
+                        controlItem.DefaultValue = (kvp.Value as ComboBox).SelectedItem?.ToString();
+                        break;
+                    case "textbox":
+                        controlItem.DefaultValue = (kvp.Value as TextBox).Text;
+                        break;
+                    case "checkbox":
+                        controlItem.DefaultChecked = (kvp.Value as CheckBox).Checked;
+                        break;
+                }
+
+                statuses.Add(controlItem);
             }
             return statuses;
         }
@@ -651,145 +712,248 @@ namespace CanBusApp
 
 
 # Form1.Designer.cs
-﻿namespace CanBusApp
+﻿using System;
+
+namespace CanBusApp
 {
     partial class Form1
     {
         private System.ComponentModel.IContainer components = null;
         private Button connectButton;
+        private Button closeButton;
+        private Button updateButton;
         private TextBox txtNodeId;
-        private TextBox txtState;
-        private TextBox txtSendCount;
-        private TextBox txtReceiveCount;
-        private CheckBox chkContinuously;
-        private CheckBox chkAuto;
+        private TextBox txtRecons;
+        private TextBox txtTxState;
+        private TextBox txtTxFrames;
+        private TextBox txtRxFrames;
+        private CheckBox chkTxContinuous;
+        private CheckBox chkAutoUpdate;
         private Label lblTitle;
         private TableLayoutPanel mainLayout;
+        private GroupBox arcnetGroup;
         private GroupBox commandsGroup;
         private GroupBox statusGroup;
+        private GroupBox optionsGroup;
+        private Label lblNodeId;
+        private Label lblRecons;
+        private Label lblTxState;
+        private Label lblTxFrames;
+        private Label lblRxFrames;
 
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
             this.connectButton = new System.Windows.Forms.Button();
+            this.closeButton = new System.Windows.Forms.Button();
+            this.updateButton = new System.Windows.Forms.Button();
             this.txtNodeId = new System.Windows.Forms.TextBox();
-            this.txtState = new System.Windows.Forms.TextBox();
-            this.txtSendCount = new System.Windows.Forms.TextBox();
-            this.txtReceiveCount = new System.Windows.Forms.TextBox();
-            this.chkContinuously = new System.Windows.Forms.CheckBox();
-            this.chkAuto = new System.Windows.Forms.CheckBox();
+            this.txtRecons = new System.Windows.Forms.TextBox();
+            this.txtTxState = new System.Windows.Forms.TextBox();
+            this.txtTxFrames = new System.Windows.Forms.TextBox();
+            this.txtRxFrames = new System.Windows.Forms.TextBox();
+            this.chkTxContinuous = new System.Windows.Forms.CheckBox();
+            this.chkAutoUpdate = new System.Windows.Forms.CheckBox();
             this.lblTitle = new System.Windows.Forms.Label();
             this.mainLayout = new System.Windows.Forms.TableLayoutPanel();
+            this.arcnetGroup = new System.Windows.Forms.GroupBox();
             this.commandsGroup = new System.Windows.Forms.GroupBox();
             this.statusGroup = new System.Windows.Forms.GroupBox();
+            this.optionsGroup = new System.Windows.Forms.GroupBox();
+            this.lblNodeId = new System.Windows.Forms.Label();
+            this.lblRecons = new System.Windows.Forms.Label();
+            this.lblTxState = new System.Windows.Forms.Label();
+            this.lblTxFrames = new System.Windows.Forms.Label();
+            this.lblRxFrames = new System.Windows.Forms.Label();
 
             this.SuspendLayout();
 
             // lblTitle
             this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.lblTitle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblTitle.Text = "CAN Bus Communication";
+            this.lblTitle.Text = "ARCNET Simulator";
             this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
             // mainLayout
-            this.mainLayout.ColumnCount = 5;
+            this.mainLayout.ColumnCount = 6;
             this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
             this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
             this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
             this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
-            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.mainLayout.Controls.Add(this.lblTitle, 0, 0);
-            this.mainLayout.SetColumnSpan(this.lblTitle, 5);
-            this.mainLayout.Controls.Add(this.txtNodeId, 0, 1);
-            this.mainLayout.Controls.Add(this.txtState, 1, 1);
-            this.mainLayout.Controls.Add(this.txtSendCount, 2, 1);
-            this.mainLayout.Controls.Add(this.txtReceiveCount, 3, 1);
-            this.mainLayout.Controls.Add(this.chkContinuously, 0, 2);
-            this.mainLayout.Controls.Add(this.chkAuto, 1, 2);
-            this.mainLayout.Controls.Add(this.connectButton, 4, 2);
-            this.mainLayout.Controls.Add(this.commandsGroup, 0, 3);
-            this.mainLayout.Controls.Add(this.statusGroup, 3, 3);
+            this.mainLayout.SetColumnSpan(this.lblTitle, 6);
+            this.mainLayout.Controls.Add(this.arcnetGroup, 0, 1);
+            this.mainLayout.SetColumnSpan(this.arcnetGroup, 3);
+            this.mainLayout.Controls.Add(this.optionsGroup, 3, 1);
+            this.mainLayout.SetColumnSpan(this.optionsGroup, 3);
+            this.mainLayout.Controls.Add(this.commandsGroup, 0, 2);
+            this.mainLayout.Controls.Add(this.statusGroup, 3, 2);
             this.mainLayout.SetColumnSpan(this.commandsGroup, 3);
-            this.mainLayout.SetColumnSpan(this.statusGroup, 2);
+            this.mainLayout.SetColumnSpan(this.statusGroup, 3);
             this.mainLayout.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainLayout.Location = new System.Drawing.Point(0, 0);
             this.mainLayout.Name = "mainLayout";
-            this.mainLayout.RowCount = 4;
+            this.mainLayout.RowCount = 3;
             this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
-            this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 30F));
+            this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 150F));
             this.mainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.mainLayout.Size = new System.Drawing.Size(800, 450);
 
-            // connectButton
-            this.connectButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.connectButton.Location = new System.Drawing.Point(603, 73);
-            this.connectButton.Name = "connectButton";
-            this.connectButton.Size = new System.Drawing.Size(75, 23);
-            this.connectButton.TabIndex = 0;
-            this.connectButton.Text = "Connect";
-            this.connectButton.UseVisualStyleBackColor = true;
-            this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
+            // arcnetGroup
+            this.arcnetGroup.Controls.Add(this.lblNodeId);
+            this.arcnetGroup.Controls.Add(this.txtNodeId);
+            this.arcnetGroup.Controls.Add(this.lblRecons);
+            this.arcnetGroup.Controls.Add(this.txtRecons);
+            this.arcnetGroup.Controls.Add(this.lblTxState);
+            this.arcnetGroup.Controls.Add(this.txtTxState);
+            this.arcnetGroup.Controls.Add(this.lblTxFrames);
+            this.arcnetGroup.Controls.Add(this.txtTxFrames);
+            this.arcnetGroup.Controls.Add(this.lblRxFrames);
+            this.arcnetGroup.Controls.Add(this.txtRxFrames);
+            this.arcnetGroup.Controls.Add(this.connectButton);
+            this.arcnetGroup.Controls.Add(this.closeButton);
+            this.arcnetGroup.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.arcnetGroup.Location = new System.Drawing.Point(3, 43);
+            this.arcnetGroup.Name = "arcnetGroup";
+            this.arcnetGroup.Size = new System.Drawing.Size(394, 144); // Adjusted size to fit next to optionsGroup
+            this.arcnetGroup.TabIndex = 0;
+            this.arcnetGroup.TabStop = false;
+            this.arcnetGroup.Text = "ARCNET";
+
+            // lblNodeId
+            this.lblNodeId.Location = new System.Drawing.Point(10, 20);
+            this.lblNodeId.Name = "lblNodeId";
+            this.lblNodeId.Size = new System.Drawing.Size(100, 20);
+            this.lblNodeId.Text = "Node Id";
 
             // txtNodeId
-            this.txtNodeId.Location = new System.Drawing.Point(3, 43);
+            this.txtNodeId.Location = new System.Drawing.Point(10, 40);
             this.txtNodeId.Name = "txtNodeId";
             this.txtNodeId.Size = new System.Drawing.Size(100, 20);
             this.txtNodeId.TabIndex = 1;
-            this.txtNodeId.PlaceholderText = "Node ID";
 
-            // txtState
-            this.txtState.Location = new System.Drawing.Point(123, 43);
-            this.txtState.Name = "txtState";
-            this.txtState.Size = new System.Drawing.Size(100, 20);
-            this.txtState.TabIndex = 2;
-            this.txtState.PlaceholderText = "State";
+            // lblRecons
+            this.lblRecons.Location = new System.Drawing.Point(120, 20);
+            this.lblRecons.Name = "lblRecons";
+            this.lblRecons.Size = new System.Drawing.Size(100, 20);
+            this.lblRecons.Text = "Recons";
 
-            // txtSendCount
-            this.txtSendCount.Location = new System.Drawing.Point(243, 43);
-            this.txtSendCount.Name = "txtSendCount";
-            this.txtSendCount.Size = new System.Drawing.Size(100, 20);
-            this.txtSendCount.TabIndex = 3;
-            this.txtSendCount.PlaceholderText = "Send Count";
+            // txtRecons
+            this.txtRecons.Location = new System.Drawing.Point(120, 40);
+            this.txtRecons.Name = "txtRecons";
+            this.txtRecons.Size = new System.Drawing.Size(100, 20);
+            this.txtRecons.TabIndex = 2;
 
-            // txtReceiveCount
-            this.txtReceiveCount.Location = new System.Drawing.Point(363, 43);
-            this.txtReceiveCount.Name = "txtReceiveCount";
-            this.txtReceiveCount.Size = new System.Drawing.Size(100, 20);
-            this.txtReceiveCount.TabIndex = 4;
-            this.txtReceiveCount.PlaceholderText = "Receive Count";
+            // lblTxState
+            this.lblTxState.Location = new System.Drawing.Point(230, 20);
+            this.lblTxState.Name = "lblTxState";
+            this.lblTxState.Size = new System.Drawing.Size(100, 20);
+            this.lblTxState.Text = "TX State";
 
-            // chkContinuously
-            this.chkContinuously.Location = new System.Drawing.Point(3, 73);
-            this.chkContinuously.Name = "chkContinuously";
-            this.chkContinuously.Size = new System.Drawing.Size(100, 20);
-            this.chkContinuously.TabIndex = 5;
-            this.chkContinuously.Text = "Continuously";
-            this.chkContinuously.UseVisualStyleBackColor = true;
-            this.chkContinuously.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            // txtTxState
+            this.txtTxState.Location = new System.Drawing.Point(230, 40);
+            this.txtTxState.Name = "txtTxState";
+            this.txtTxState.Size = new System.Drawing.Size(100, 20);
+            this.txtTxState.TabIndex = 3;
 
-            // chkAuto
-            this.chkAuto.Location = new System.Drawing.Point(123, 73);
-            this.chkAuto.Name = "chkAuto";
-            this.chkAuto.Size = new System.Drawing.Size(50, 20);
-            this.chkAuto.TabIndex = 6;
-            this.chkAuto.Text = "Auto";
-            this.chkAuto.UseVisualStyleBackColor = true;
-            this.chkAuto.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            // lblTxFrames
+            this.lblTxFrames.Location = new System.Drawing.Point(340, 20);
+            this.lblTxFrames.Name = "lblTxFrames";
+            this.lblTxFrames.Size = new System.Drawing.Size(100, 20);
+            this.lblTxFrames.Text = "TX Frames";
+
+            // txtTxFrames
+            this.txtTxFrames.Location = new System.Drawing.Point(340, 40);
+            this.txtTxFrames.Name = "txtTxFrames";
+            this.txtTxFrames.Size = new System.Drawing.Size(100, 20);
+            this.txtTxFrames.TabIndex = 4;
+
+            // lblRxFrames
+            this.lblRxFrames.Location = new System.Drawing.Point(450, 20);
+            this.lblRxFrames.Name = "lblRxFrames";
+            this.lblRxFrames.Size = new System.Drawing.Size(100, 20);
+            this.lblRxFrames.Text = "RX Frames";
+
+            // txtRxFrames
+            this.txtRxFrames.Location = new System.Drawing.Point(450, 40);
+            this.txtRxFrames.Name = "txtRxFrames";
+            this.txtRxFrames.Size = new System.Drawing.Size(100, 20);
+            this.txtRxFrames.TabIndex = 5;
+
+            // connectButton
+            this.connectButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.connectButton.Location = new System.Drawing.Point(10, 70);
+            this.connectButton.Name = "connectButton";
+            this.connectButton.Size = new System.Drawing.Size(75, 23);
+            this.connectButton.TabIndex = 6;
+            this.connectButton.Text = "Connect";
+            this.connectButton.UseVisualStyleBackColor = true;
+
+            // closeButton
+            this.closeButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.closeButton.Location = new System.Drawing.Point(90, 70);
+            this.closeButton.Name = "closeButton";
+            this.closeButton.Size = new System.Drawing.Size(75, 23);
+            this.closeButton.TabIndex = 7;
+            this.closeButton.Text = "Close";
+            this.closeButton.UseVisualStyleBackColor = true;
+
+            // optionsGroup
+            this.optionsGroup.Controls.Add(this.chkTxContinuous);
+            this.optionsGroup.Controls.Add(this.chkAutoUpdate);
+            this.optionsGroup.Controls.Add(this.updateButton);
+            this.optionsGroup.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.optionsGroup.Location = new System.Drawing.Point(403, 43);
+            this.optionsGroup.Name = "optionsGroup";
+            this.optionsGroup.Size = new System.Drawing.Size(394, 144); // Adjusted size to fit next to arcnetGroup
+            this.optionsGroup.TabIndex = 1;
+            this.optionsGroup.TabStop = false;
+            this.optionsGroup.Text = "Options";
+
+            // chkTxContinuous
+            this.chkTxContinuous.Location = new System.Drawing.Point(10, 20);
+            this.chkTxContinuous.Name = "chkTxContinuous";
+            this.chkTxContinuous.Size = new System.Drawing.Size(100, 20);
+            this.chkTxContinuous.TabIndex = 0;
+            this.chkTxContinuous.Text = "TX Continuous";
+            this.chkTxContinuous.UseVisualStyleBackColor = true;
+
+            // chkAutoUpdate
+            this.chkAutoUpdate.Location = new System.Drawing.Point(10, 50);
+            this.chkAutoUpdate.Name = "chkAutoUpdate";
+            this.chkAutoUpdate.Size = new System.Drawing.Size(100, 20);
+            this.chkAutoUpdate.TabIndex = 1;
+            this.chkAutoUpdate.Text = "Auto Update";
+            this.chkAutoUpdate.UseVisualStyleBackColor = true;
+
+            // updateButton
+            this.updateButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.updateButton.Location = new System.Drawing.Point(10, 80);
+            this.updateButton.Name = "updateButton";
+            this.updateButton.Size = new System.Drawing.Size(75, 23);
+            this.updateButton.TabIndex = 2;
+            this.updateButton.Text = "Update";
+            this.updateButton.UseVisualStyleBackColor = true;
 
             // commandsGroup
-            this.commandsGroup.Location = new System.Drawing.Point(3, 103);
+            this.commandsGroup.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.commandsGroup.Location = new System.Drawing.Point(3, 193);
             this.commandsGroup.Name = "commandsGroup";
-            this.commandsGroup.Size = new System.Drawing.Size(394, 344);
-            this.commandsGroup.Text = "Commands (Send to device)";
-            this.commandsGroup.Padding = new System.Windows.Forms.Padding(10);
+            this.commandsGroup.Size = new System.Drawing.Size(394, 254);
+            this.commandsGroup.TabIndex = 2;
+            this.commandsGroup.TabStop = false;
+            this.commandsGroup.Text = "Commands";
 
             // statusGroup
-            this.statusGroup.Location = new System.Drawing.Point(403, 103);
+            this.statusGroup.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.statusGroup.Location = new System.Drawing.Point(403, 193);
             this.statusGroup.Name = "statusGroup";
-            this.statusGroup.Size = new System.Drawing.Size(394, 344);
-            this.statusGroup.Text = "Status (Receive from device)";
-            this.statusGroup.Padding = new System.Windows.Forms.Padding(10);
+            this.statusGroup.Size = new System.Drawing.Size(394, 254);
+            this.statusGroup.TabIndex = 3;
+            this.statusGroup.TabStop = false;
+            this.statusGroup.Text = "Status";
 
             // Form1
             this.ClientSize = new System.Drawing.Size(800, 450);
@@ -811,146 +975,25 @@ namespace CanBusApp
     }
 }
 
-
-# Form1.resx
-﻿<?xml version="1.0" encoding="utf-8"?>
-<root>
-  <!--
-    Microsoft ResX Schema 
-
-    Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
-    associated with the data types.
-
-    Example:
-
-    ... ado.net/XML headers & schema ...
-    <resheader name="resmimetype">text/microsoft-resx</resheader>
-    <resheader name="version">2.0</resheader>
-    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
-    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
-    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
-    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
-    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
-        <value>[base64 mime encoded serialized .NET Framework object]</value>
-    </data>
-    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
-        <comment>This is a comment</comment>
-    </data>
-
-    There are any number of "resheader" rows that contain simple
-    name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
-    mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
-    extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
-    read any of the formats listed below.
-
-    mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
-            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
-            : and then encoded with base64 encoding.
-    
-    mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
-            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
-            : and then encoded with base64 encoding.
-
-    mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
-            : using a System.ComponentModel.TypeConverter
-            : and then encoded with base64 encoding.
-    -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-</root>
-
 # Program.cs
-namespace CanBusApp;
-
-static class Program
+namespace CanBusApp
 {
-    /// <summary>
-    ///  The main entry point for the application.
-    /// </summary>
-    [STAThread]
-    static void Main()
+    static class Program
     {
-        // To customize application configuration such as set high DPI settings or default font,
-        // see https://aka.ms/applicationconfiguration.
-        ApplicationConfiguration.Initialize();
-        Application.Run(new Form1());
-    }    
+        [STAThread]
+        static void Main()
+        {
+            ApplicationConfiguration.Initialize();
+
+            var model = new CanBusModel();
+            var view = new Form1();
+            var controller = new CanBusController(model, view);
+
+            Application.Run(view);
+        }
+    }
 }
+
 
 # CanBusApp.deps.json
 {
@@ -1308,7 +1351,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CanBusApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fb767826dd36d488f9d927185616dc5c6f39f132")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b49c6c9052e2f6d08e74b554d2ff12b0d9ab9c95")]
 [assembly: System.Reflection.AssemblyProductAttribute("CanBusApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CanBusApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -1389,5 +1432,53 @@ global using global::System.Windows.Forms;
 
 
 # CanBusApp.sourcelink.json
-{"documents":{"C:\\dev\\projects\\CANSim\\CanBusApp\\*":"https://raw.githubusercontent.com/DebugDuckling/CanBusApp/fb767826dd36d488f9d927185616dc5c6f39f132/*"}}
+{"documents":{"C:\\dev\\projects\\CANSim\\CanBusApp\\*":"https://raw.githubusercontent.com/DebugDuckling/CanBusApp/b49c6c9052e2f6d08e74b554d2ff12b0d9ab9c95/*"}}
+
+# .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+// <autogenerated />
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v8.0", FrameworkDisplayName = ".NET 8.0")]
+
+
+# CanBusApp.AssemblyInfo.cs
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by a tool.
+//     Runtime Version:4.0.30319.42000
+//
+//     Changes to this file may cause incorrect behavior and will be lost if
+//     the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+
+using System;
+using System.Reflection;
+
+[assembly: System.Reflection.AssemblyCompanyAttribute("CanBusApp")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b49c6c9052e2f6d08e74b554d2ff12b0d9ab9c95")]
+[assembly: System.Reflection.AssemblyProductAttribute("CanBusApp")]
+[assembly: System.Reflection.AssemblyTitleAttribute("CanBusApp")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+[assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows7.0")]
+[assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows7.0")]
+
+// Generated by the MSBuild WriteCodeFragment class.
+
+
+
+# CanBusApp.GlobalUsings.g.cs
+// <auto-generated/>
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.Drawing;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+global using global::System.Windows.Forms;
+
 
