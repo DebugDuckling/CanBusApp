@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using ArcnetDriver;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.CodeAnalysis;
+
 
 namespace CanBusApp
 {
@@ -50,6 +54,10 @@ namespace CanBusApp
                         {
                             ((ComboBox)control).SelectedItem = command.DefaultValue;
                         }
+                        if (!string.IsNullOrEmpty(command.Code))
+                        {
+                            ((ComboBox)control).SelectedIndexChanged += (sender, e) => ExecuteCode(command.Code);
+                        }
                         break;
 
                     case "checkbox":
@@ -60,6 +68,10 @@ namespace CanBusApp
                             Text = command.Label,
                             Checked = bool.Parse(command.DefaultValue ?? "false")
                         };
+                        if (!string.IsNullOrEmpty(command.Code))
+                        {
+                            ((CheckBox)control).CheckedChanged += (sender, e) => ExecuteCode(command.Code);
+                        }
                         break;
 
                     case "textbox":
@@ -69,6 +81,10 @@ namespace CanBusApp
                             Width = 100,
                             Text = command.DefaultValue
                         };
+                        if (!string.IsNullOrEmpty(command.Code))
+                        {
+                            ((TextBox)control).TextChanged += (sender, e) => ExecuteCode(command.Code);
+                        }
                         break;
 
                     case "button":
@@ -78,7 +94,10 @@ namespace CanBusApp
                             Width = 100,
                             Text = command.ButtonText
                         };
-                        control.Click += (sender, e) => MessageBox.Show($"Button {command.Label} clicked!");
+                        if (!string.IsNullOrEmpty(command.Code))
+                        {
+                            control.Click += (sender, e) => ExecuteCode(command.Code);
+                        }
                         break;
 
                     default:
@@ -122,6 +141,10 @@ namespace CanBusApp
                         {
                             ((ComboBox)control).SelectedItem = status.DefaultValue;
                         }
+                        if (!string.IsNullOrEmpty(status.Code))
+                        {
+                            ((ComboBox)control).SelectedIndexChanged += (sender, e) => ExecuteCode(status.Code);
+                        }
                         break;
 
                     case "checkbox":
@@ -132,6 +155,10 @@ namespace CanBusApp
                             Text = status.Label,
                             Checked = bool.Parse(status.DefaultValue ?? "false")
                         };
+                        if (!string.IsNullOrEmpty(status.Code))
+                        {
+                            ((CheckBox)control).CheckedChanged += (sender, e) => ExecuteCode(status.Code);
+                        }
                         break;
 
                     case "textbox":
@@ -141,6 +168,10 @@ namespace CanBusApp
                             Width = 100,
                             Text = status.DefaultValue
                         };
+                        if (!string.IsNullOrEmpty(status.Code))
+                        {
+                            ((TextBox)control).TextChanged += (sender, e) => ExecuteCode(status.Code);
+                        }
                         break;
 
                     case "button":
@@ -150,7 +181,10 @@ namespace CanBusApp
                             Width = 100,
                             Text = status.ButtonText
                         };
-                        control.Click += (sender, e) => MessageBox.Show($"Button {status.Label} clicked!");
+                        if (!string.IsNullOrEmpty(status.Code))
+                        {
+                            control.Click += (sender, e) => ExecuteCode(status.Code);
+                        }
                         break;
 
                     default:
@@ -168,6 +202,27 @@ namespace CanBusApp
                 yPosition += 30;
             }
         }
+
+
+
+
+        private void ExecuteCode(string code)
+        {
+            if (!string.IsNullOrEmpty(code))
+            {
+                var references = AppDomain.CurrentDomain.GetAssemblies()
+                    .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
+                    .Select(a => MetadataReference.CreateFromFile(a.Location));
+
+                var scriptOptions = ScriptOptions.Default
+                    .WithReferences(references)
+                    .WithImports("System", "System.Windows.Forms");
+
+                CSharpScript.RunAsync(code, scriptOptions).Wait();
+            }
+        }
+
+
 
         private void connectButton_Click(object sender, EventArgs e)
         {
@@ -192,12 +247,12 @@ namespace CanBusApp
         }
 
         public string NodeId => txtNodeId.Text;
-        public string Recons => txtRecons.Text;
-        public string TxState => txtTxState.Text;
-        public string TxFrames => txtTxFrames.Text;
-        public string RxFrames => txtRxFrames.Text;
-        public bool TxContinuous => chkTxContinuous.Checked;
-        public bool AutoUpdate => chkAutoUpdate.Checked;
+        public string Recons => txtRecons.Text; // Ensure this property exists
+        public string TxState => txtTxState.Text; // Ensure this property exists
+        public string TxFrames => txtTxFrames.Text; // Ensure this property exists
+        public string RxFrames => txtRxFrames.Text; // Ensure this property exists
+        public bool TxContinuous => chkTxContinuous.Checked; // Ensure this property exists
+        public bool AutoUpdate => chkAutoUpdate.Checked; // Ensure this property exists
 
         public List<Command> GetCommands()
         {

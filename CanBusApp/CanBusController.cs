@@ -13,20 +13,22 @@ namespace CanBusApp
             this.view = view;
 
             view.ConnectButton.Click += ConnectButton_Click;
-            view.UpdateButton.Click += UpdateButton_Click;
+           // view.UpdateButton.Click += UpdateButton_Click;
         }
 
         private void ConnectButton_Click(object sender, EventArgs e)
         {
             model.NodeId = view.NodeId;
-            model.Recons = view.Recons;
-            model.TxState = view.TxState;
-            model.TxFrames = view.TxFrames;
-            model.RxFrames = view.RxFrames;
-            model.TxContinuous = view.TxContinuous;
-            model.AutoUpdate = view.AutoUpdate;
             model.Commands = view.GetCommands();
             model.Statuses = view.GetStatuses();
+
+            // Update the following lines to set the properties correctly
+            model.Recons = int.Parse(view.Recons);
+            model.TxState = view.TxState;
+            model.TxFrames = int.Parse(view.TxFrames);
+            model.RxFrames = int.Parse(view.RxFrames);
+            model.TxContinuous = view.TxContinuous;
+            model.AutoUpdate = view.AutoUpdate;
 
             MessageBox.Show("Data collected and stored in buffer.");
         }

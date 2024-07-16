@@ -4,23 +4,26 @@
       "label": "Command 1",
       "type": "combobox",
       "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 2"
+      "defaultValue": "enum 2",
+      "code": "MessageBox.Show(\"ComboBox Command 1 changed\");"
     },
     {
       "label": "Command 2",
-      "```json": null,
       "type": "checkbox",
-      "defaultValue": "true"
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
     },
     {
       "label": "Command 3",
       "type": "textbox",
-      "defaultValue": "default text"
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
     },
     {
       "label": "Command 4",
       "type": "button",
-      "buttonText": "Click Me"
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
     }
   ],
   "status": [
@@ -28,22 +31,26 @@
       "label": "Status 1",
       "type": "combobox",
       "options": [ "status 1", "status 2", "status 3", "status 4" ],
-      "defaultValue": "status 1"
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
     },
     {
       "label": "Status 2",
       "type": "checkbox",
-      "defaultValue": "false"
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
     },
     {
       "label": "Status 3",
       "type": "textbox",
-      "defaultValue": "initial text"
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
     },
     {
       "label": "Status 4",
       "type": "button",
-      "buttonText": "Press"
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
     }
   ]
 }
