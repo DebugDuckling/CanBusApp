@@ -289,7 +289,6 @@ namespace CanBusApp
             }
             return statuses;
         }
-
         public Button ConnectButton => this.connectButton;
         public Button UpdateButton => this.updateButton;
     }

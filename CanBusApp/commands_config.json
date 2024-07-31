@@ -4,8 +4,151 @@
       "label": "Command 1",
       "type": "combobox",
       "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 2",
-      "code": "MessageBox.Show(\"ComboBox Command 1 changed\");"
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
     },
     {
       "label": "Command 2",
@@ -27,6 +170,131 @@
     }
   ],
   "status": [
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
     {
       "label": "Status 1",
       "type": "combobox",

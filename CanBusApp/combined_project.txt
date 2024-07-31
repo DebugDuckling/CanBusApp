@@ -387,7 +387,7 @@ namespace CanBusApp
             this.view = view;
 
             view.ConnectButton.Click += ConnectButton_Click;
-            view.UpdateButton.Click += UpdateButton_Click;
+           // view.UpdateButton.Click += UpdateButton_Click;
         }
 
         private void ConnectButton_Click(object sender, EventArgs e)
@@ -591,8 +591,7 @@ public class Status
       "label": "Command 1",
       "type": "combobox",
       "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 2",
-      "code": "MessageBox.Show(\"ComboBox Command 1 changed\");"
+      "defaultValue": "enum 2"
     },
     {
       "label": "Command 2",
@@ -604,7 +603,151 @@ public class Status
       "label": "Command 3",
       "type": "textbox",
       "defaultValue": "default text",
-      "code": "MessageBox.Show('TextBox Command 3 changed');"
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
     },
     {
       "label": "Command 4",
@@ -619,25 +762,150 @@ public class Status
       "type": "combobox",
       "options": [ "status 1", "status 2", "status 3", "status 4" ],
       "defaultValue": "status 1",
-      "code": "MessageBox.Show('ComboBox Status 1 changed');"
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
     },
     {
       "label": "Status 2",
       "type": "checkbox",
       "defaultValue": "false",
-      "code": "MessageBox.Show('CheckBox Status 2 checked');"
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
     },
     {
       "label": "Status 3",
       "type": "textbox",
       "defaultValue": "initial text",
-      "code": "MessageBox.Show('TextBox Status 3 changed');"
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
     },
     {
       "label": "Status 4",
       "type": "button",
       "buttonText": "Press",
-      "code": "MessageBox.Show('Button Status 4 clicked');"
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
     }
   ]
 }
@@ -876,13 +1144,19 @@ namespace CanBusApp
             }
         }
 
+
+
+
         private void ExecuteCode(string code)
         {
             if (!string.IsNullOrEmpty(code))
             {
-                // Execute the code provided in the JSON file
+                var references = AppDomain.CurrentDomain.GetAssemblies()
+                    .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
+                    .Select(a => MetadataReference.CreateFromFile(a.Location));
+
                 var scriptOptions = ScriptOptions.Default
-                    .WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => MetadataReference.CreateFromFile(a.Location)))
+                    .WithReferences(references)
                     .WithImports("System", "System.Windows.Forms");
 
                 CSharpScript.RunAsync(code, scriptOptions).Wait();
@@ -956,7 +1230,6 @@ namespace CanBusApp
             }
             return statuses;
         }
-
         public Button ConnectButton => this.connectButton;
         public Button UpdateButton => this.updateButton;
     }
@@ -1005,6 +1278,11 @@ namespace CanBusApp
             mainLayout = new TableLayoutPanel();
             topLayout = new TableLayoutPanel();
             arcnetGroup = new GroupBox();
+            lblRXFrames = new Label();
+            lblTXFrames = new Label();
+            lblTXState = new Label();
+            lblRecons = new Label();
+            label1 = new Label();
             optionsGroup = new GroupBox();
             updateButton = new Button();
             bottomLayout = new TableLayoutPanel();
@@ -1020,7 +1298,7 @@ namespace CanBusApp
             // connectButton
             // 
             connectButton.FlatStyle = FlatStyle.Flat;
-            connectButton.Location = new Point(632, 30);
+            connectButton.Location = new Point(633, 60);
             connectButton.Name = "connectButton";
             connectButton.Size = new Size(75, 23);
             connectButton.TabIndex = 6;
@@ -1030,7 +1308,7 @@ namespace CanBusApp
             // 
             // txtNodeId
             // 
-            txtNodeId.Location = new Point(20, 30);
+            txtNodeId.Location = new Point(21, 60);
             txtNodeId.Name = "txtNodeId";
             txtNodeId.PlaceholderText = "Node ID";
             txtNodeId.Size = new Size(100, 23);
@@ -1038,7 +1316,7 @@ namespace CanBusApp
             // 
             // txtRecons
             // 
-            txtRecons.Location = new Point(140, 30);
+            txtRecons.Location = new Point(141, 60);
             txtRecons.Name = "txtRecons";
             txtRecons.PlaceholderText = "Recons";
             txtRecons.Size = new Size(100, 23);
@@ -1046,7 +1324,7 @@ namespace CanBusApp
             // 
             // txtTxState
             // 
-            txtTxState.Location = new Point(260, 30);
+            txtTxState.Location = new Point(261, 60);
             txtTxState.Name = "txtTxState";
             txtTxState.PlaceholderText = "TX State";
             txtTxState.Size = new Size(100, 23);
@@ -1054,7 +1332,7 @@ namespace CanBusApp
             // 
             // txtTxFrames
             // 
-            txtTxFrames.Location = new Point(380, 30);
+            txtTxFrames.Location = new Point(381, 60);
             txtTxFrames.Name = "txtTxFrames";
             txtTxFrames.PlaceholderText = "TX Frames";
             txtTxFrames.Size = new Size(100, 23);
@@ -1062,7 +1340,7 @@ namespace CanBusApp
             // 
             // txtRxFrames
             // 
-            txtRxFrames.Location = new Point(500, 30);
+            txtRxFrames.Location = new Point(501, 60);
             txtRxFrames.Name = "txtRxFrames";
             txtRxFrames.PlaceholderText = "RX Frames";
             txtRxFrames.Size = new Size(100, 23);
@@ -1081,7 +1359,7 @@ namespace CanBusApp
             // chkAutoUpdate
             // 
             chkAutoUpdate.FlatStyle = FlatStyle.Flat;
-            chkAutoUpdate.Location = new Point(20, 60);
+            chkAutoUpdate.Location = new Point(20, 56);
             chkAutoUpdate.Name = "chkAutoUpdate";
             chkAutoUpdate.Size = new Size(120, 20);
             chkAutoUpdate.TabIndex = 8;
@@ -1111,8 +1389,8 @@ namespace CanBusApp
             mainLayout.Name = "mainLayout";
             mainLayout.RowCount = 3;
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 31.6239319F));
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 68.37607F));
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 26.2820511F));
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 73.71795F));
             mainLayout.Size = new Size(938, 508);
             mainLayout.TabIndex = 0;
             // 
@@ -1128,34 +1406,84 @@ namespace CanBusApp
             topLayout.Name = "topLayout";
             topLayout.RowCount = 1;
             topLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            topLayout.Size = new Size(932, 142);
+            topLayout.Size = new Size(932, 117);
             topLayout.TabIndex = 1;
             // 
             // arcnetGroup
             // 
+            arcnetGroup.Controls.Add(lblRXFrames);
+            arcnetGroup.Controls.Add(lblTXFrames);
+            arcnetGroup.Controls.Add(lblTXState);
+            arcnetGroup.Controls.Add(lblRecons);
+            arcnetGroup.Controls.Add(label1);
             arcnetGroup.Controls.Add(txtNodeId);
             arcnetGroup.Controls.Add(txtRecons);
             arcnetGroup.Controls.Add(txtTxState);
             arcnetGroup.Controls.Add(txtTxFrames);
             arcnetGroup.Controls.Add(txtRxFrames);
             arcnetGroup.Controls.Add(connectButton);
-            arcnetGroup.Dock = DockStyle.Fill;
+            arcnetGroup.Dock = DockStyle.Top;
             arcnetGroup.Location = new Point(3, 3);
             arcnetGroup.Name = "arcnetGroup";
-            arcnetGroup.Size = new Size(739, 136);
+            arcnetGroup.Size = new Size(739, 111);
             arcnetGroup.TabIndex = 0;
             arcnetGroup.TabStop = false;
             arcnetGroup.Text = "ARCNET";
+            // 
+            // lblRXFrames
+            // 
+            lblRXFrames.AutoSize = true;
+            lblRXFrames.Location = new Point(501, 42);
+            lblRXFrames.Name = "lblRXFrames";
+            lblRXFrames.Size = new Size(62, 15);
+            lblRXFrames.TabIndex = 11;
+            lblRXFrames.Text = "RX Frames";
+            // 
+            // lblTXFrames
+            // 
+            lblTXFrames.AutoSize = true;
+            lblTXFrames.Location = new Point(381, 42);
+            lblTXFrames.Name = "lblTXFrames";
+            lblTXFrames.Size = new Size(61, 15);
+            lblTXFrames.TabIndex = 10;
+            lblTXFrames.Text = "TX Frames";
+            // 
+            // lblTXState
+            // 
+            lblTXState.AutoSize = true;
+            lblTXState.Location = new Point(261, 42);
+            lblTXState.Name = "lblTXState";
+            lblTXState.Size = new Size(49, 15);
+            lblTXState.TabIndex = 9;
+            lblTXState.Text = "TX State";
+            // 
+            // lblRecons
+            // 
+            lblRecons.AutoSize = true;
+            lblRecons.Location = new Point(141, 42);
+            lblRecons.Name = "lblRecons";
+            lblRecons.Size = new Size(45, 15);
+            lblRecons.TabIndex = 8;
+            lblRecons.Text = "Recons";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(21, 42);
+            label1.Name = "label1";
+            label1.Size = new Size(49, 15);
+            label1.TabIndex = 7;
+            label1.Text = "Node Id";
             // 
             // optionsGroup
             // 
             optionsGroup.Controls.Add(chkTxContinuous);
             optionsGroup.Controls.Add(chkAutoUpdate);
             optionsGroup.Controls.Add(updateButton);
-            optionsGroup.Dock = DockStyle.Fill;
+            optionsGroup.Dock = DockStyle.Top;
             optionsGroup.Location = new Point(748, 3);
             optionsGroup.Name = "optionsGroup";
-            optionsGroup.Size = new Size(181, 136);
+            optionsGroup.Size = new Size(181, 111);
             optionsGroup.TabIndex = 1;
             optionsGroup.TabStop = false;
             optionsGroup.Text = "Options";
@@ -1163,7 +1491,7 @@ namespace CanBusApp
             // updateButton
             // 
             updateButton.FlatStyle = FlatStyle.Flat;
-            updateButton.Location = new Point(20, 90);
+            updateButton.Location = new Point(20, 82);
             updateButton.Name = "updateButton";
             updateButton.Size = new Size(75, 23);
             updateButton.TabIndex = 9;
@@ -1178,12 +1506,12 @@ namespace CanBusApp
             bottomLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             bottomLayout.Controls.Add(commandsGroup, 0, 0);
             bottomLayout.Controls.Add(statusGroup, 1, 0);
-            bottomLayout.Dock = DockStyle.Fill;
-            bottomLayout.Location = new Point(3, 191);
+            bottomLayout.Dock = DockStyle.Top;
+            bottomLayout.Location = new Point(3, 166);
             bottomLayout.Name = "bottomLayout";
             bottomLayout.RowCount = 1;
             bottomLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            bottomLayout.Size = new Size(932, 314);
+            bottomLayout.Size = new Size(932, 339);
             bottomLayout.TabIndex = 2;
             // 
             // commandsGroup
@@ -1191,7 +1519,7 @@ namespace CanBusApp
             commandsGroup.Dock = DockStyle.Fill;
             commandsGroup.Location = new Point(3, 3);
             commandsGroup.Name = "commandsGroup";
-            commandsGroup.Size = new Size(460, 308);
+            commandsGroup.Size = new Size(460, 333);
             commandsGroup.TabIndex = 0;
             commandsGroup.TabStop = false;
             commandsGroup.Text = "Commands (Send to device)";
@@ -1201,7 +1529,7 @@ namespace CanBusApp
             statusGroup.Dock = DockStyle.Fill;
             statusGroup.Location = new Point(469, 3);
             statusGroup.Name = "statusGroup";
-            statusGroup.Size = new Size(460, 308);
+            statusGroup.Size = new Size(460, 333);
             statusGroup.TabIndex = 1;
             statusGroup.TabStop = false;
             statusGroup.Text = "Status (Receive from device)";
@@ -1229,6 +1557,12 @@ namespace CanBusApp
             }
             base.Dispose(disposing);
         }
+
+        private Label label1;
+        private Label lblRXFrames;
+        private Label lblTXFrames;
+        private Label lblTXState;
+        private Label lblRecons;
     }
 }
 
@@ -1802,8 +2136,7 @@ namespace CanBusApp
       "label": "Command 1",
       "type": "combobox",
       "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
-      "defaultValue": "enum 2",
-      "code": "MessageBox.Show(\"ComboBox Command 1 changed\");"
+      "defaultValue": "enum 2"
     },
     {
       "label": "Command 2",
@@ -1815,7 +2148,151 @@ namespace CanBusApp
       "label": "Command 3",
       "type": "textbox",
       "defaultValue": "default text",
-      "code": "MessageBox.Show('TextBox Command 3 changed');"
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
+    },
+    {
+      "label": "Command 4",
+      "type": "button",
+      "buttonText": "Click Me",
+      "code": "MessageBox.Show(\"Button Command 4 clicked\");"
+    },
+    {
+      "label": "Command 1",
+      "type": "combobox",
+      "options": [ "enum 1", "enum 2", "enum 3", "enum 4" ],
+      "defaultValue": "enum 2"
+    },
+    {
+      "label": "Command 2",
+      "type": "checkbox",
+      "defaultValue": "true",
+      "code": "MessageBox.Show(\"CheckBox Command 2 checked\");"
+    },
+    {
+      "label": "Command 3",
+      "type": "textbox",
+      "defaultValue": "default text",
+      "code": "MessageBox.Show(\"TextBox Command 3 changed\");"
     },
     {
       "label": "Command 4",
@@ -1830,25 +2307,150 @@ namespace CanBusApp
       "type": "combobox",
       "options": [ "status 1", "status 2", "status 3", "status 4" ],
       "defaultValue": "status 1",
-      "code": "MessageBox.Show('ComboBox Status 1 changed');"
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
     },
     {
       "label": "Status 2",
       "type": "checkbox",
       "defaultValue": "false",
-      "code": "MessageBox.Show('CheckBox Status 2 checked');"
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
     },
     {
       "label": "Status 3",
       "type": "textbox",
       "defaultValue": "initial text",
-      "code": "MessageBox.Show('TextBox Status 3 changed');"
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
     },
     {
       "label": "Status 4",
       "type": "button",
       "buttonText": "Press",
-      "code": "MessageBox.Show('Button Status 4 clicked');"
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
+    },
+    {
+      "label": "Status 1",
+      "type": "combobox",
+      "options": [ "status 1", "status 2", "status 3", "status 4" ],
+      "defaultValue": "status 1",
+      "code": "MessageBox.Show(\"ComboBox Status 1 changed\");"
+    },
+    {
+      "label": "Status 2",
+      "type": "checkbox",
+      "defaultValue": "false",
+      "code": "MessageBox.Show(\"CheckBox Status 2 checked\");"
+    },
+    {
+      "label": "Status 3",
+      "type": "textbox",
+      "defaultValue": "initial text",
+      "code": "MessageBox.Show(\"TextBox Status 3 changed\");"
+    },
+    {
+      "label": "Status 4",
+      "type": "button",
+      "buttonText": "Press",
+      "code": "MessageBox.Show(\"Button Status 4 clicked\");"
     }
   ]
 }
@@ -3685,7 +4287,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CanBusApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+790eecf266f1ec19ad0e538b6ca223a42cd6bfc7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+25ba9376d3f3b893fb16a681d085817f64f3f2f4")]
 [assembly: System.Reflection.AssemblyProductAttribute("CanBusApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CanBusApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
@@ -4157,7 +4759,7 @@ global using global::System.Windows.Forms;
 
 
 # CanBusApp.sourcelink.json
-{"documents":{"C:\\dev\\projects\\CANSim\\CanBusApp\\*":"https://raw.githubusercontent.com/DebugDuckling/CanBusApp/790eecf266f1ec19ad0e538b6ca223a42cd6bfc7/*"}}
+{"documents":{"C:\\dev\\projects\\CANSim\\CanBusApp\\*":"https://raw.githubusercontent.com/DebugDuckling/CanBusApp/25ba9376d3f3b893fb16a681d085817f64f3f2f4/*"}}
 
 # .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
 // <autogenerated />

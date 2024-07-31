@@ -39,6 +39,11 @@ namespace CanBusApp
             mainLayout = new TableLayoutPanel();
             topLayout = new TableLayoutPanel();
             arcnetGroup = new GroupBox();
+            lblRXFrames = new Label();
+            lblTXFrames = new Label();
+            lblTXState = new Label();
+            lblRecons = new Label();
+            label1 = new Label();
             optionsGroup = new GroupBox();
             updateButton = new Button();
             bottomLayout = new TableLayoutPanel();
@@ -54,7 +59,7 @@ namespace CanBusApp
             // connectButton
             // 
             connectButton.FlatStyle = FlatStyle.Flat;
-            connectButton.Location = new Point(632, 30);
+            connectButton.Location = new Point(633, 60);
             connectButton.Name = "connectButton";
             connectButton.Size = new Size(75, 23);
             connectButton.TabIndex = 6;
@@ -64,7 +69,7 @@ namespace CanBusApp
             // 
             // txtNodeId
             // 
-            txtNodeId.Location = new Point(20, 30);
+            txtNodeId.Location = new Point(21, 60);
             txtNodeId.Name = "txtNodeId";
             txtNodeId.PlaceholderText = "Node ID";
             txtNodeId.Size = new Size(100, 23);
@@ -72,7 +77,7 @@ namespace CanBusApp
             // 
             // txtRecons
             // 
-            txtRecons.Location = new Point(140, 30);
+            txtRecons.Location = new Point(141, 60);
             txtRecons.Name = "txtRecons";
             txtRecons.PlaceholderText = "Recons";
             txtRecons.Size = new Size(100, 23);
@@ -80,7 +85,7 @@ namespace CanBusApp
             // 
             // txtTxState
             // 
-            txtTxState.Location = new Point(260, 30);
+            txtTxState.Location = new Point(261, 60);
             txtTxState.Name = "txtTxState";
             txtTxState.PlaceholderText = "TX State";
             txtTxState.Size = new Size(100, 23);
@@ -88,7 +93,7 @@ namespace CanBusApp
             // 
             // txtTxFrames
             // 
-            txtTxFrames.Location = new Point(380, 30);
+            txtTxFrames.Location = new Point(381, 60);
             txtTxFrames.Name = "txtTxFrames";
             txtTxFrames.PlaceholderText = "TX Frames";
             txtTxFrames.Size = new Size(100, 23);
@@ -96,7 +101,7 @@ namespace CanBusApp
             // 
             // txtRxFrames
             // 
-            txtRxFrames.Location = new Point(500, 30);
+            txtRxFrames.Location = new Point(501, 60);
             txtRxFrames.Name = "txtRxFrames";
             txtRxFrames.PlaceholderText = "RX Frames";
             txtRxFrames.Size = new Size(100, 23);
@@ -115,7 +120,7 @@ namespace CanBusApp
             // chkAutoUpdate
             // 
             chkAutoUpdate.FlatStyle = FlatStyle.Flat;
-            chkAutoUpdate.Location = new Point(20, 60);
+            chkAutoUpdate.Location = new Point(20, 56);
             chkAutoUpdate.Name = "chkAutoUpdate";
             chkAutoUpdate.Size = new Size(120, 20);
             chkAutoUpdate.TabIndex = 8;
@@ -145,8 +150,8 @@ namespace CanBusApp
             mainLayout.Name = "mainLayout";
             mainLayout.RowCount = 3;
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 31.6239319F));
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 68.37607F));
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 26.2820511F));
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 73.71795F));
             mainLayout.Size = new Size(938, 508);
             mainLayout.TabIndex = 0;
             // 
@@ -162,34 +167,84 @@ namespace CanBusApp
             topLayout.Name = "topLayout";
             topLayout.RowCount = 1;
             topLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            topLayout.Size = new Size(932, 142);
+            topLayout.Size = new Size(932, 117);
             topLayout.TabIndex = 1;
             // 
             // arcnetGroup
             // 
+            arcnetGroup.Controls.Add(lblRXFrames);
+            arcnetGroup.Controls.Add(lblTXFrames);
+            arcnetGroup.Controls.Add(lblTXState);
+            arcnetGroup.Controls.Add(lblRecons);
+            arcnetGroup.Controls.Add(label1);
             arcnetGroup.Controls.Add(txtNodeId);
             arcnetGroup.Controls.Add(txtRecons);
             arcnetGroup.Controls.Add(txtTxState);
             arcnetGroup.Controls.Add(txtTxFrames);
             arcnetGroup.Controls.Add(txtRxFrames);
             arcnetGroup.Controls.Add(connectButton);
-            arcnetGroup.Dock = DockStyle.Fill;
+            arcnetGroup.Dock = DockStyle.Top;
             arcnetGroup.Location = new Point(3, 3);
             arcnetGroup.Name = "arcnetGroup";
-            arcnetGroup.Size = new Size(739, 136);
+            arcnetGroup.Size = new Size(739, 111);
             arcnetGroup.TabIndex = 0;
             arcnetGroup.TabStop = false;
             arcnetGroup.Text = "ARCNET";
+            // 
+            // lblRXFrames
+            // 
+            lblRXFrames.AutoSize = true;
+            lblRXFrames.Location = new Point(501, 42);
+            lblRXFrames.Name = "lblRXFrames";
+            lblRXFrames.Size = new Size(62, 15);
+            lblRXFrames.TabIndex = 11;
+            lblRXFrames.Text = "RX Frames";
+            // 
+            // lblTXFrames
+            // 
+            lblTXFrames.AutoSize = true;
+            lblTXFrames.Location = new Point(381, 42);
+            lblTXFrames.Name = "lblTXFrames";
+            lblTXFrames.Size = new Size(61, 15);
+            lblTXFrames.TabIndex = 10;
+            lblTXFrames.Text = "TX Frames";
+            // 
+            // lblTXState
+            // 
+            lblTXState.AutoSize = true;
+            lblTXState.Location = new Point(261, 42);
+            lblTXState.Name = "lblTXState";
+            lblTXState.Size = new Size(49, 15);
+            lblTXState.TabIndex = 9;
+            lblTXState.Text = "TX State";
+            // 
+            // lblRecons
+            // 
+            lblRecons.AutoSize = true;
+            lblRecons.Location = new Point(141, 42);
+            lblRecons.Name = "lblRecons";
+            lblRecons.Size = new Size(45, 15);
+            lblRecons.TabIndex = 8;
+            lblRecons.Text = "Recons";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(21, 42);
+            label1.Name = "label1";
+            label1.Size = new Size(49, 15);
+            label1.TabIndex = 7;
+            label1.Text = "Node Id";
             // 
             // optionsGroup
             // 
             optionsGroup.Controls.Add(chkTxContinuous);
             optionsGroup.Controls.Add(chkAutoUpdate);
             optionsGroup.Controls.Add(updateButton);
-            optionsGroup.Dock = DockStyle.Fill;
+            optionsGroup.Dock = DockStyle.Top;
             optionsGroup.Location = new Point(748, 3);
             optionsGroup.Name = "optionsGroup";
-            optionsGroup.Size = new Size(181, 136);
+            optionsGroup.Size = new Size(181, 111);
             optionsGroup.TabIndex = 1;
             optionsGroup.TabStop = false;
             optionsGroup.Text = "Options";
@@ -197,7 +252,7 @@ namespace CanBusApp
             // updateButton
             // 
             updateButton.FlatStyle = FlatStyle.Flat;
-            updateButton.Location = new Point(20, 90);
+            updateButton.Location = new Point(20, 82);
             updateButton.Name = "updateButton";
             updateButton.Size = new Size(75, 23);
             updateButton.TabIndex = 9;
@@ -212,12 +267,12 @@ namespace CanBusApp
             bottomLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             bottomLayout.Controls.Add(commandsGroup, 0, 0);
             bottomLayout.Controls.Add(statusGroup, 1, 0);
-            bottomLayout.Dock = DockStyle.Fill;
-            bottomLayout.Location = new Point(3, 191);
+            bottomLayout.Dock = DockStyle.Top;
+            bottomLayout.Location = new Point(3, 166);
             bottomLayout.Name = "bottomLayout";
             bottomLayout.RowCount = 1;
             bottomLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            bottomLayout.Size = new Size(932, 314);
+            bottomLayout.Size = new Size(932, 339);
             bottomLayout.TabIndex = 2;
             // 
             // commandsGroup
@@ -225,7 +280,7 @@ namespace CanBusApp
             commandsGroup.Dock = DockStyle.Fill;
             commandsGroup.Location = new Point(3, 3);
             commandsGroup.Name = "commandsGroup";
-            commandsGroup.Size = new Size(460, 308);
+            commandsGroup.Size = new Size(460, 333);
             commandsGroup.TabIndex = 0;
             commandsGroup.TabStop = false;
             commandsGroup.Text = "Commands (Send to device)";
@@ -235,7 +290,7 @@ namespace CanBusApp
             statusGroup.Dock = DockStyle.Fill;
             statusGroup.Location = new Point(469, 3);
             statusGroup.Name = "statusGroup";
-            statusGroup.Size = new Size(460, 308);
+            statusGroup.Size = new Size(460, 333);
             statusGroup.TabIndex = 1;
             statusGroup.TabStop = false;
             statusGroup.Text = "Status (Receive from device)";
@@ -263,5 +318,11 @@ namespace CanBusApp
             }
             base.Dispose(disposing);
         }
+
+        private Label label1;
+        private Label lblRXFrames;
+        private Label lblTXFrames;
+        private Label lblTXState;
+        private Label lblRecons;
     }
 }
